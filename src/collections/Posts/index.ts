@@ -52,30 +52,21 @@ export const Posts: CollectionConfig = {
     defaultColumns: ['title', 'slug', 'updatedAt'],
     livePreview: {
       url: ({ data, req }) => {
-        // Use req.tenant which is automatically added by the multi-tenant plugin
-        // Use type assertion to tell TypeScript that req has a tenant property
-        const tenantSlug = (req as any)?.tenant?.slug || 'default'
-        const slug = typeof data?.slug === 'string' ? data.slug : ''
-        
-        // Create direct preview URL that works in admin context
-        if (slug === 'home') {
-          return `/${tenantSlug}/api/preview?collection=posts`
-        }
-        return `/${tenantSlug}/api/preview?collection=posts&slug=${slug}`
+        const path = generatePreviewPath({
+          slug: typeof data?.slug === 'string' ? data.slug : '',
+          collection: 'posts',
+          req,
+        })
+
+        return path
       },
     },
-    preview: (data, { req }) => {
-      // Use req.tenant which is automatically added by the multi-tenant plugin
-      // Use type assertion to tell TypeScript that req has a tenant property
-      const tenantSlug = (req as any)?.tenant?.slug || 'default'
-      const slug = typeof data?.slug === 'string' ? data.slug : ''
-      
-      // Create direct preview URL that works in admin context
-      if (slug === 'home') {
-        return `/${tenantSlug}/api/preview?collection=posts`
-      }
-      return `/${tenantSlug}/api/preview?collection=posts&slug=${slug}`
-    },
+    preview: (data, { req }) =>
+      generatePreviewPath({
+        slug: typeof data?.slug === 'string' ? data.slug : '',
+        collection: 'posts',
+        req,
+      }),
     useAsTitle: 'title',
   },
   fields: [

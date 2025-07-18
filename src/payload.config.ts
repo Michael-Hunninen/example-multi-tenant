@@ -104,8 +104,9 @@ export default buildConfig({
         headers: {},
         footers: {},
         tenants: {},
+        forms: {},
       },
-      debug: true, // Enable debug mode to make tenant field visible in admin UI
+      // Removing debug mode to hide the duplicate tenant field in admin UI
       tenantField: {
         access: {
           read: () => true,

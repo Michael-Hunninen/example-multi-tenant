@@ -555,6 +555,7 @@ export interface FormBlock {
  */
 export interface Form {
   id: string;
+  tenant?: (string | null) | Tenant;
   title: string;
   fields?:
     | (
@@ -1367,6 +1368,7 @@ export interface TenantsSelect<T extends boolean = true> {
  * via the `definition` "forms_select".
  */
 export interface FormsSelect<T extends boolean = true> {
+  tenant?: T;
   title?: T;
   fields?:
     | T
