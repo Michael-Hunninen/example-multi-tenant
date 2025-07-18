@@ -1,0 +1,21 @@
+.seedButton {
+  appearance: none;
+  background-color: var(--theme-success-500);
+  border-radius: 4px;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-weight: 600;
+  padding: 4px 8px;
+  text-decoration: none;
+
+  &:hover,
+  &:focus {
+    background-color: var(--theme-success-600);
+  }
+
+  &:focus {
+    outline: none;
+  }
+}

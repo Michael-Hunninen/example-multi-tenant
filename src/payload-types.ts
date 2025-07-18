@@ -185,7 +185,18 @@ export interface Page {
       | null;
     media?: (string | null) | Media;
   };
-  layout: (CallToActionBlock | ContentBlock | MediaBlock | ArchiveBlock | FormBlock)[];
+  layout: (
+    | CallToActionBlock
+    | ContentBlock
+    | MediaBlock
+    | ArchiveBlock
+    | FormBlock
+    | TrainerProfileBlock
+    | HorseShowcaseBlock
+    | TrainingServicesBlock
+    | TestimonialsBlock
+    | EventsBlock
+  )[];
   meta?: {
     title?: string | null;
     description?: string | null;
@@ -726,6 +737,244 @@ export interface Form {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TrainerProfileBlock".
+ */
+export interface TrainerProfileBlock {
+  name: string;
+  title?: string | null;
+  image?: (string | null) | Media;
+  bio?: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  achievements?:
+    | {
+        achievement: string;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'trainerProfileBlock';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HorseShowcaseBlock".
+ */
+export interface HorseShowcaseBlock {
+  title: string;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  horses?:
+    | {
+        name: string;
+        breed?: string | null;
+        age?: string | null;
+        color?: string | null;
+        image?: (string | null) | Media;
+        description?: {
+          root: {
+            type: string;
+            children: {
+              type: string;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        } | null;
+        price?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'horseShowcaseBlock';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TrainingServicesBlock".
+ */
+export interface TrainingServicesBlock {
+  title: string;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  services?:
+    | {
+        name: string;
+        image?: (string | null) | Media;
+        description?: {
+          root: {
+            type: string;
+            children: {
+              type: string;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        } | null;
+        price?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'trainingServicesBlock';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TestimonialsBlock".
+ */
+export interface TestimonialsBlock {
+  title: string;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  layout: 'grid' | 'carousel';
+  testimonials?:
+    | {
+        author: string;
+        location?: string | null;
+        image?: (string | null) | Media;
+        rating?: number | null;
+        text: {
+          root: {
+            type: string;
+            children: {
+              type: string;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'testimonialsBlock';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "EventsBlock".
+ */
+export interface EventsBlock {
+  title: string;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  displayStyle: 'list' | 'grid' | 'calendar';
+  events?:
+    | {
+        name: string;
+        date: string;
+        endDate?: string | null;
+        location?: string | null;
+        image?: (string | null) | Media;
+        description?: {
+          root: {
+            type: string;
+            children: {
+              type: string;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        } | null;
+        link?: {
+          url?: string | null;
+          label?: string | null;
+          newTab?: boolean | null;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'eventsBlock';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "headers".
  */
 export interface Header {
@@ -1042,6 +1291,11 @@ export interface PagesSelect<T extends boolean = true> {
         mediaBlock?: T | MediaBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
+        trainerProfileBlock?: T | TrainerProfileBlockSelect<T>;
+        horseShowcaseBlock?: T | HorseShowcaseBlockSelect<T>;
+        trainingServicesBlock?: T | TrainingServicesBlockSelect<T>;
+        testimonialsBlock?: T | TestimonialsBlockSelect<T>;
+        eventsBlock?: T | EventsBlockSelect<T>;
       };
   meta?:
     | T
@@ -1134,6 +1388,115 @@ export interface FormBlockSelect<T extends boolean = true> {
   form?: T;
   enableIntro?: T;
   introContent?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TrainerProfileBlock_select".
+ */
+export interface TrainerProfileBlockSelect<T extends boolean = true> {
+  name?: T;
+  title?: T;
+  image?: T;
+  bio?: T;
+  achievements?:
+    | T
+    | {
+        achievement?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HorseShowcaseBlock_select".
+ */
+export interface HorseShowcaseBlockSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  horses?:
+    | T
+    | {
+        name?: T;
+        breed?: T;
+        age?: T;
+        color?: T;
+        image?: T;
+        description?: T;
+        price?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TrainingServicesBlock_select".
+ */
+export interface TrainingServicesBlockSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  services?:
+    | T
+    | {
+        name?: T;
+        image?: T;
+        description?: T;
+        price?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TestimonialsBlock_select".
+ */
+export interface TestimonialsBlockSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  layout?: T;
+  testimonials?:
+    | T
+    | {
+        author?: T;
+        location?: T;
+        image?: T;
+        rating?: T;
+        text?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "EventsBlock_select".
+ */
+export interface EventsBlockSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  displayStyle?: T;
+  events?:
+    | T
+    | {
+        name?: T;
+        date?: T;
+        endDate?: T;
+        location?: T;
+        image?: T;
+        description?: T;
+        link?:
+          | T
+          | {
+              url?: T;
+              label?: T;
+              newTab?: T;
+            };
+        id?: T;
+      };
   id?: T;
   blockName?: T;
 }

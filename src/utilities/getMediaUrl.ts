@@ -9,12 +9,18 @@ import { getClientSideURL } from '@/utilities/getURL'
 export const getMediaUrl = (url: string | null | undefined, cacheTag?: string | null): string => {
   if (!url) return ''
 
-  // Check if URL already has http/https protocol
+  // Handle already absolute URLs (with http/https)
   if (url.startsWith('http://') || url.startsWith('https://')) {
     return cacheTag ? `${url}?${cacheTag}` : url
   }
-
-  // Otherwise prepend client-side URL
+  
+  // Ensure URL starts with a slash
+  const formattedUrl = url.startsWith('/') ? url : `/${url}`
+  
+  // For relative URLs, add the base URL to make them absolute
+  // This ensures consistent behavior between server and client
   const baseUrl = getClientSideURL()
-  return cacheTag ? `${baseUrl}${url}?${cacheTag}` : `${baseUrl}${url}`
+  return cacheTag 
+    ? `${baseUrl}${formattedUrl}?${cacheTag}` 
+    : `${baseUrl}${formattedUrl}`
 }

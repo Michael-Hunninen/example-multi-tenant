@@ -3,6 +3,7 @@ import { useTenantSelection } from '@payloadcms/plugin-multi-tenant/client'
 import React from 'react'
 
 import { SeedButton } from './SeedButton/index'
+import { JGSeedButton } from './JGSeedButton/index'
 import './index.scss'
 
 const baseClass = 'before-dashboard'
@@ -22,6 +23,10 @@ const BeforeDashboard: React.FC = () => {
             visit your website
           </a>
           {' to see the results.'}
+        </li>
+        <li>
+          <JGSeedButton />
+          {' to create a new tenant for JG Performance Horses with pre-configured content.'}
         </li>
         <li>
           If you created this repo using Payload Cloud, head over to GitHub and clone it to your

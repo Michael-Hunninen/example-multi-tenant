@@ -4,8 +4,13 @@ import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
 import { Archive } from '../../blocks/ArchiveBlock/config'
 import { CallToAction } from '../../blocks/CallToAction/config'
 import { Content } from '../../blocks/Content/config'
+import { EventsBlock } from '../../blocks/Events/config'
 import { FormBlock } from '../../blocks/Form/config'
+import { HorseShowcaseBlock } from '../../blocks/HorseShowcase/config'
 import { MediaBlock } from '../../blocks/MediaBlock/config'
+import { TestimonialsBlock } from '../../blocks/Testimonials/config'
+import { TrainerProfileBlock } from '../../blocks/TrainerProfile/config'
+import { TrainingServicesBlock } from '../../blocks/TrainingServices/config'
 import { hero } from '../../heros/config'
 import { slugField } from '../../fields/slug'
 import { populatePublishedAt } from '../../hooks/populatePublishedAt'
@@ -92,7 +97,18 @@ export const Pages: CollectionConfig<'pages'> = {
             {
               name: 'layout',
               type: 'blocks',
-              blocks: [CallToAction, Content, MediaBlock, Archive, FormBlock],
+              blocks: [
+                CallToAction, 
+                Content, 
+                MediaBlock, 
+                Archive, 
+                FormBlock, 
+                TrainerProfileBlock, 
+                HorseShowcaseBlock, 
+                TrainingServicesBlock, 
+                TestimonialsBlock, 
+                EventsBlock
+              ],
               required: true,
               admin: {
                 initCollapsed: true,
