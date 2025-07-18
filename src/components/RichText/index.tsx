@@ -55,3 +55,4 @@ const RichText: React.FC<Props> = ({ data, enableGutter = true, enableProse = tr
 }
 
 export default RichText
+export { RichText as RenderRichText }

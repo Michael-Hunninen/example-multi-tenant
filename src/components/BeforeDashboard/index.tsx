@@ -1,7 +1,8 @@
 import { Banner } from '@payloadcms/ui/elements/Banner'
+import { useTenantSelection } from '@payloadcms/plugin-multi-tenant/client'
 import React from 'react'
 
-import { SeedButton } from './SeedButton'
+import { SeedButton } from './SeedButton/index'
 import './index.scss'
 
 const baseClass = 'before-dashboard'

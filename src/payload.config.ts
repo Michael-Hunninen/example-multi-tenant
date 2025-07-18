@@ -105,6 +105,7 @@ export default buildConfig({
         footers: {},
         tenants: {},
       },
+      debug: true, // Enable debug mode to make tenant field visible in admin UI
       tenantField: {
         access: {
           read: () => true,

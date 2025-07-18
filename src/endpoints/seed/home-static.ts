@@ -84,5 +84,46 @@ export const home: RequiredDataFromCollectionSlug<'pages'> = {
     title: 'Multi-Tenant CMS',
   },
   title: 'Home',
-  layout: [],
+  layout: [
+    {
+      blockType: 'content',
+      blockName: 'Welcome Content',
+      columns: [
+        {
+          size: 'full',
+          richText: {
+            root: {
+              type: 'root',
+              children: [
+                {
+                  type: 'paragraph',
+                  children: [
+                    {
+                      type: 'text',
+                      detail: 0,
+                      format: 0,
+                      mode: 'normal',
+                      style: '',
+                      text: 'Welcome to our multi-tenant CMS platform. This is an example content block.',
+                      version: 1,
+                    },
+                  ],
+                  direction: 'ltr',
+                  format: '',
+                  indent: 0,
+                  textFormat: 0,
+                  version: 1,
+                }
+              ],
+              direction: 'ltr',
+              format: '',
+              indent: 0,
+              version: 1,
+            }
+          },
+          enableLink: false
+        }
+      ]
+    }
+  ],
 }

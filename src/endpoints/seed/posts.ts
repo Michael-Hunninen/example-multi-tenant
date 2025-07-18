@@ -15,6 +15,36 @@ export const createPosts = async (payload: Payload, tenantId: string, userId: st
       publishedAt: new Date().toISOString(),
       authors: [userId],
       categories: [categoryIds[0]], // Use first category
+      content: {
+        root: {
+          type: 'root',
+          children: [
+            {
+              type: 'paragraph',
+              children: [
+                {
+                  type: 'text',
+                  detail: 0,
+                  format: 0,
+                  mode: 'normal',
+                  style: '',
+                  text: postDescriptions[0],
+                  version: 1,
+                },
+              ],
+              direction: 'ltr',
+              format: '',
+              indent: 0,
+              textFormat: 0,
+              version: 1,
+            },
+          ],
+          direction: 'ltr',
+          format: '',
+          indent: 0,
+          version: 1,
+        },
+      },
       hero: {
         type: 'highImpact',
         media: media.image1.id,
@@ -37,6 +67,36 @@ export const createPosts = async (payload: Payload, tenantId: string, userId: st
       publishedAt: new Date().toISOString(),
       authors: [userId],
       categories: [categoryIds[1]], // Use second category
+      content: {
+        root: {
+          type: 'root',
+          children: [
+            {
+              type: 'paragraph',
+              children: [
+                {
+                  type: 'text',
+                  detail: 0,
+                  format: 0,
+                  mode: 'normal',
+                  style: '',
+                  text: postDescriptions[1],
+                  version: 1,
+                },
+              ],
+              direction: 'ltr',
+              format: '',
+              indent: 0,
+              textFormat: 0,
+              version: 1,
+            },
+          ],
+          direction: 'ltr',
+          format: '',
+          indent: 0,
+          version: 1,
+        },
+      },
       hero: {
         type: 'highImpact',
         media: media.image2.id,

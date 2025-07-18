@@ -60,6 +60,7 @@ export const seed = async ({
 
   payload.logger.info(`— Seeding demo author and user...`)
 
+  // Delete generic demo author
   await payload.delete({
     collection: 'users',
     depth: 0,
@@ -69,6 +70,19 @@ export const seed = async ({
       },
     },
   })
+  
+  // Delete all tenant-specific author users
+  for (const tenantConfig of tenantConfigs) {
+    await payload.delete({
+      collection: 'users',
+      depth: 0,
+      where: {
+        email: {
+          equals: `demo-author-${tenantConfig.slug}@example.com`,
+        },
+      },
+    })
+  }
 
   // Create tenants first
   payload.logger.info(`— Creating tenants...`)
@@ -146,7 +160,36 @@ export const seed = async ({
       },
       data: {
         title: 'Post 1',
-        content: 'This is the content of post 1' as any, // Type assertion for rich text field
+        content: {
+          root: {
+            type: 'root',
+            children: [
+              {
+                type: 'paragraph',
+                children: [
+                  {
+                    type: 'text',
+                    detail: 0,
+                    format: 0,
+                    mode: 'normal',
+                    style: '',
+                    text: 'This is the content of post 1',
+                    version: 1,
+                  },
+                ],
+                direction: 'ltr',
+                format: '',
+                indent: 0,
+                textFormat: 0,
+                version: 1,
+              },
+            ],
+            direction: 'ltr',
+            format: '',
+            indent: 0,
+            version: 1,
+          },
+        },
         author: demoAuthor.id,
         categories: [category1.id],
         ...tenantData,
@@ -161,7 +204,36 @@ export const seed = async ({
       },
       data: {
         title: 'Post 2',
-        content: 'This is the content of post 2' as any, // Type assertion for rich text field
+        content: {
+          root: {
+            type: 'root',
+            children: [
+              {
+                type: 'paragraph',
+                children: [
+                  {
+                    type: 'text',
+                    detail: 0,
+                    format: 0,
+                    mode: 'normal',
+                    style: '',
+                    text: 'This is the content of post 2',
+                    version: 1,
+                  },
+                ],
+                direction: 'ltr',
+                format: '',
+                indent: 0,
+                textFormat: 0,
+                version: 1,
+              },
+            ],
+            direction: 'ltr',
+            format: '',
+            indent: 0,
+            version: 1,
+          },
+        },
         author: demoAuthor.id,
         categories: [category2.id],
         ...tenantData,
@@ -176,7 +248,36 @@ export const seed = async ({
       },
       data: {
         title: 'Post 3',
-        content: 'This is the content of post 3' as any, // Type assertion for rich text field
+        content: {
+          root: {
+            type: 'root',
+            children: [
+              {
+                type: 'paragraph',
+                children: [
+                  {
+                    type: 'text',
+                    detail: 0,
+                    format: 0,
+                    mode: 'normal',
+                    style: '',
+                    text: 'This is the content of post 3',
+                    version: 1,
+                  },
+                ],
+                direction: 'ltr',
+                format: '',
+                indent: 0,
+                textFormat: 0,
+                version: 1,
+              },
+            ],
+            direction: 'ltr',
+            format: '',
+            indent: 0,
+            version: 1,
+          },
+        },
         author: demoAuthor.id,
         categories: [category3.id],
         ...tenantData,
@@ -239,11 +340,43 @@ export const seed = async ({
         data: {
           ...contactPageData,
           tenant: tenant.id,
+          title: 'Contact', // Explicitly set the title field
           layout: [
             {
               blockType: 'formBlock',
               blockName: 'Contact Form Block',
               form: contactForm.id,
+              enableIntro: true,
+              introContent: {
+                root: {
+                  type: 'root',
+                  children: [
+                    {
+                      type: 'heading',
+                      children: [
+                        {
+                          type: 'text',
+                          detail: 0,
+                          format: 0,
+                          mode: 'normal',
+                          style: '',
+                          text: 'Example contact form:',
+                          version: 1,
+                        },
+                      ],
+                      direction: 'ltr',
+                      format: '',
+                      indent: 0,
+                      tag: 'h3',
+                      version: 1,
+                    },
+                  ],
+                  direction: 'ltr',
+                  format: '',
+                  indent: 0,
+                  version: 1,
+                },
+              },
             },
           ],
         } as any, // Type assertion for multi-tenant plugin fields
