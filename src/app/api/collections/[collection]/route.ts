@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 
-export async function GET(req: NextRequest, { params }: { params: { collection: string }}) {
+export async function GET(req: NextRequest, { params }: { params: { collection: string } }) {
   try {
     const collection = params.collection
     const searchParams = req.nextUrl.searchParams
