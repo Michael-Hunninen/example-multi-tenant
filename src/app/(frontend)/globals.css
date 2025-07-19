@@ -47,6 +47,37 @@
     --success: 196 52% 74%;
     --warning: 34 89% 85%;
     --error: 10 100% 86%;
+
+    /* Dynamic Branding Variables - Updated by BrandingProvider */
+    --brand-primary: #0C0C0C;
+    --brand-accent: #2D81FF;
+    --brand-logo-url: none;
+    --brand-icon-url: none;
+  }
+
+  /* Dynamic Branding Utility Classes */
+  .brand-primary {
+    color: var(--brand-primary);
+  }
+
+  .brand-accent {
+    color: var(--brand-accent);
+  }
+
+  .bg-brand-primary {
+    background-color: var(--brand-primary);
+  }
+
+  .bg-brand-accent {
+    background-color: var(--brand-accent);
+  }
+
+  .border-brand-primary {
+    border-color: var(--brand-primary);
+  }
+
+  .border-brand-accent {
+    border-color: var(--brand-accent);
   }
 
   [data-theme='dark'] {

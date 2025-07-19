@@ -5,7 +5,11 @@ import React from 'react'
 import { Logo } from '@/components/Logo/Logo'
 import { ThemeSelector } from '@/providers/Theme/ThemeSelector'
 
-export function Footer() {
+interface FooterProps {
+  tenantId?: string
+}
+
+export function Footer({ tenantId }: FooterProps = {}) {
 
   return (
     <footer className="mt-auto border-t border-border bg-black dark:bg-card text-white">

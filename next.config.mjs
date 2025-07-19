@@ -6,21 +6,7 @@ const NEXT_PUBLIC_SERVER_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Keep the tenant domain rewrites
-  async rewrites() {
-    return [
-      {
-        source: '/((?!admin|api))tenant-domains/:path*',
-        destination: '/tenant-domains/:tenant/:path*',
-        has: [
-          {
-            type: 'host',
-            value: '(?<tenant>.*)',
-          },
-        ],
-      },
-    ]
-  },
+  // Tenant routing is handled by middleware instead of rewrites
   // Add configurations from website template
   images: {
     remotePatterns: [

@@ -18,6 +18,8 @@ import { Footers } from './collections/Footers'
 import { Media } from './collections/Media'
 import { Posts } from './collections/Posts'
 import { Categories } from './collections/Categories'
+import { Branding } from './collections/Branding'
+import { Domains } from './collections/Domains'
 // Forms collection is provided by the FormBuilder plugin
 import { multiTenantPlugin } from '@payloadcms/plugin-multi-tenant'
 import { isSuperAdmin } from './access/isSuperAdmin'
@@ -33,9 +35,37 @@ export default buildConfig({
     components: {
       // Adding BeforeDashboard component for admin UI
       beforeDashboard: ['@/components/BeforeDashboard'],
+      // Adding Logo and Icon components for whitelabel
+      graphics: {
+        Icon: '/graphics/Icon/index.tsx#Icon',
+        Logo: '/graphics/Logo/index.tsx#Logo',
+      },
     },
     importMap: {
       baseDir: path.resolve(dirname),
+    },
+    // Custom meta data for whitelabel
+    meta: {
+      description: 'Multi-Tenant SaaS Platform',
+      icons: [
+        {
+          type: 'image/svg+xml',
+          rel: 'icon',
+          url: '/favicon.ico',
+        },
+      ],
+      openGraph: {
+        description: 'Enterprise Multi-Tenant SaaS Platform',
+        images: [
+          {
+            height: 600,
+            url: '/og-image.png',
+            width: 800,
+          },
+        ],
+        title: 'Multi-Tenant Dashboard',
+      },
+      titleSuffix: '- Multi-Tenant Platform',
     },
     user: 'users',
     livePreview: {
@@ -61,9 +91,14 @@ export default buildConfig({
       ],
     },
   },
-  collections: [Pages, Posts, Media, Categories, Users, Headers, Footers, Tenants],
+  collections: [Users, Tenants, Domains, Branding, Pages, Media, Posts, Categories, Headers, Footers],
   db: mongooseAdapter({
     url: process.env.DATABASE_URI as string,
+    connectOptions: {
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+    },
   }),
   // db: postgresAdapter({
   //   pool: {
@@ -97,16 +132,40 @@ export default buildConfig({
     ...plugins,
     multiTenantPlugin<Config>({
       collections: {
-        pages: {},
-        posts: {},
-        media: {},
-        categories: {},
-        headers: {},
-        footers: {},
-        tenants: {},
-        forms: {},
+        pages: {
+          // Standard collection - each tenant has their own pages
+        },
+        posts: {
+          // Standard collection - each tenant has their own posts
+        },
+        media: {
+          // Standard collection - each tenant has their own media
+        },
+        categories: {
+          // Standard collection - each tenant has their own categories
+        },
+        headers: {
+          // Standard collection - each tenant has their own headers
+        },
+        footers: {
+          // Standard collection - each tenant has their own footers
+        },
+        domains: {
+          // Domains collection as global - one set of domain mappings per tenant
+          isGlobal: true,
+        },
+        // tenants: removed from multi-tenant plugin - tenants collection should not have tenant field added to itself
+        // users: removed from multi-tenant plugin - uses tenantsArrayField instead of standard tenant field
+        forms: {
+          // Standard collection - each tenant has their own forms
+        },
+        '_branding_': {
+          // Set as a global collection (one branding per tenant)
+          isGlobal: true,
+        },
       },
-      // Removing debug mode to hide the duplicate tenant field in admin UI
+      // Debug mode disabled to prevent duplicate tenant fields in admin UI
+      debug: false,
       tenantField: {
         access: {
           read: () => true,

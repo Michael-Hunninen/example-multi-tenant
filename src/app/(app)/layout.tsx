@@ -1,4 +1,5 @@
 import React from 'react'
+import { BrandingProvider } from '@/contexts/BrandingContext'
 
 import './index.scss'
 
@@ -13,7 +14,11 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html className={baseClass} lang="en">
-      <body>{children}</body>
+      <body>
+        <BrandingProvider>
+          {children}
+        </BrandingProvider>
+      </body>
     </html>
   )
 }

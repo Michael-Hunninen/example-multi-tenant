@@ -19,22 +19,49 @@ export const Tenants: CollectionConfig = {
       name: 'name',
       type: 'text',
       required: true,
-    },
-    {
-      name: 'domain',
-      type: 'text',
-      admin: {
-        description: 'Used for domain-based tenant handling',
-      },
+      label: 'Tenant Name',
     },
     {
       name: 'slug',
       type: 'text',
       admin: {
-        description: 'Used for url paths, example: /tenant-slug/page-slug',
+        description: 'Used for URL paths and identification (e.g., agency-owner, bronze-tenant)',
       },
       index: true,
       required: true,
+      unique: true,
+      label: 'Tenant Slug',
+    },
+    {
+      name: 'isAgencyOwner',
+      type: 'checkbox',
+      defaultValue: false,
+      label: 'Agency Owner',
+      admin: {
+        description: 'Mark this tenant as the agency owner (system default). Only one should exist.',
+        position: 'sidebar',
+      },
+      index: true,
+    },
+    {
+      name: 'description',
+      type: 'textarea',
+      label: 'Description',
+      admin: {
+        description: 'Internal description of this tenant',
+      },
+    },
+    {
+      name: 'status',
+      type: 'select',
+      options: [
+        { label: 'Active', value: 'active' },
+        { label: 'Inactive', value: 'inactive' },
+        { label: 'Suspended', value: 'suspended' },
+      ],
+      defaultValue: 'active',
+      required: true,
+      label: 'Status',
     },
     {
       name: 'allowPublicRead',
@@ -46,6 +73,32 @@ export const Tenants: CollectionConfig = {
       },
       defaultValue: false,
       index: true,
+      label: 'Allow Public Read',
+    },
+    {
+      name: 'settings',
+      type: 'group',
+      label: 'Tenant Settings',
+      fields: [
+        {
+          name: 'maxUsers',
+          type: 'number',
+          label: 'Max Users',
+          admin: {
+            description: 'Maximum number of users allowed for this tenant (0 = unlimited)',
+          },
+          defaultValue: 0,
+        },
+        {
+          name: 'maxPages',
+          type: 'number',
+          label: 'Max Pages',
+          admin: {
+            description: 'Maximum number of pages allowed for this tenant (0 = unlimited)',
+          },
+          defaultValue: 0,
+        },
+      ],
     },
   ],
 }

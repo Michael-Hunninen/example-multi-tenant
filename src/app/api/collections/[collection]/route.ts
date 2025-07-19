@@ -3,7 +3,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 
-export async function GET(req: NextRequest, { params }: { params: { collection: string } }) {
+type CollectionParams = { params: { collection: string } }
+
+export async function GET(req: NextRequest, { params }: CollectionParams) {
   try {
     const collection = params.collection
     const searchParams = req.nextUrl.searchParams
@@ -11,7 +13,7 @@ export async function GET(req: NextRequest, { params }: { params: { collection: 
     const page = parseInt(searchParams.get('page') || '1', 10)
     
     // Allow only specific collections for security
-    const allowedCollections = ['posts', 'media']
+    const allowedCollections = ['pages', 'posts', 'media', 'branding']
     if (!allowedCollections.includes(collection)) {
       return NextResponse.json({ error: 'Collection not allowed' }, { status: 403 })
     }
@@ -19,9 +21,15 @@ export async function GET(req: NextRequest, { params }: { params: { collection: 
     const payload = await getPayload({ config: configPromise })
     
     // Get tenant from cookie to respect multi-tenant isolation
-    const cookieStore = cookies()
-    const tenantCookie = cookieStore.get('payload-tenant')
-    const tenant = tenantCookie?.value
+    // Cookies API has changed in Next.js 15
+    let tenant: string | undefined
+    try {
+      const cookieStore = await cookies()
+      const tenantCookie = cookieStore.get('payload-tenant')
+      tenant = tenantCookie?.value
+    } catch (error) {
+      console.warn('Error reading tenant cookie:', error)
+    }
     
     const result = await payload.find({
       collection: collection as any,

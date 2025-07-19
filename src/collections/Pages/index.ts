@@ -77,9 +77,6 @@ export const Pages: CollectionConfig<'pages'> = {
     useAsTitle: 'title',
   },
   fields: [
-    // Use the tenant field from the multi-tenant plugin
-    // It will add the required tenant relationship to the collection
-    // No additional configuration needed as it's automatically set up by the plugin
     {
       name: 'title',
       type: 'text',

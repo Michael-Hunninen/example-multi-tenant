@@ -1,4 +1,7 @@
-import React from 'react'
+"use client"
+
+import React, { useEffect, useState } from 'react'
+import { BrandingSettings } from '../../utilities/getBranding'
 
 const css = `
   html[data-theme="dark"] .logo-text {
@@ -11,22 +14,62 @@ const css = `
   }
 `
 
+// Default logo as fallback
+const DefaultLogo = () => (
+  <svg
+    className="graphic-logo"
+    fill="none"
+    viewBox="0 0 200 60"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <style type="text/css">{css}</style>
+    <rect width="200" height="60" rx="8" fill="#F3F3F3" />
+    <path
+      className="logo-text"
+      d="M26.064 38V22.4H28.944V28.88H35.712V22.4H38.592V38H35.712V31.28H28.944V38H26.064ZM51.1606 38L50.0886 35.12H44.3366L43.2646 38H40.1926L45.7606 22.4H48.6806L54.2486 38H51.1606ZM47.2166 25.76L45.4566 32.32H48.9686L47.2166 25.76ZM57.2261 38V22.4H60.1061V35.6H66.6261V38H57.2261ZM73.0102 38V31.84L67.5942 22.4H70.7902L74.4582 29.12L78.1262 22.4H81.3222L75.8902 31.84V38H73.0102ZM89.2147 38V22.4H92.0947V29.84L98.5347 22.4H101.799L96.3347 28.56L102.247 38H98.8067L94.4947 31.04L92.0947 33.76V38H89.2147ZM110.063 38V24.8H105.599V22.4H117.407V24.8H112.943V38H110.063ZM121.943 38V22.4H133.183V24.8H124.823V28.8H132.159V31.2H124.823V35.6H133.183V38H121.943ZM142.943 38V22.4H145.823V35.6H152.343V38H142.943ZM166.558 38V22.4H169.438V38H166.558ZM174.426 38V22.4H178.234L184.146 33.52V22.4H187.026V38H183.218L177.306 26.88V38H174.426Z"
+      fill="#333333"
+    />
+  </svg>
+)
+
 export const Logo = () => {
+  const [branding, setBranding] = useState<BrandingSettings | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchBranding = async () => {
+      try {
+        const brandingResponse = await fetch('/api/branding-simple')
+        if (brandingResponse.ok) {
+          const data = await brandingResponse.json()
+          setBranding(data)
+          console.log('Logo: Fetched branding data for tenant:', data.tenantId || 'default', data)
+        } else {
+          console.error('Logo: Failed to fetch branding, status:', brandingResponse.status)
+        }
+      } catch (error) {
+        console.error('Logo: Failed to fetch branding:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchBranding()
+  }, [])
+
+  // Show default logo during loading or if no branding is found
+  if (loading || !branding?.logo?.url) {
+    return <DefaultLogo />
+  }
+
+  // When custom logo is available
   return (
-    <svg
+    <img
+      src={branding.logo.url}
+      alt="Admin Logo"
       className="graphic-logo"
-      fill="none"
-      viewBox="0 0 200 60"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <style type="text/css">{css}</style>
-      <rect width="200" height="60" rx="8" fill="#F3F3F3" />
-      <path
-        className="logo-text"
-        d="M26.064 38V22.4H28.944V28.88H35.712V22.4H38.592V38H35.712V31.28H28.944V38H26.064ZM51.1606 38L50.0886 35.12H44.3366L43.2646 38H40.1926L45.7606 22.4H48.6806L54.2486 38H51.1606ZM47.2166 25.76L45.4566 32.32H48.9686L47.2166 25.76ZM57.2261 38V22.4H60.1061V35.6H66.6261V38H57.2261ZM73.0102 38V31.84L67.5942 22.4H70.7902L74.4582 29.12L78.1262 22.4H81.3222L75.8902 31.84V38H73.0102ZM89.2147 38V22.4H92.0947V29.84L98.5347 22.4H101.799L96.3347 28.56L102.247 38H98.8067L94.4947 31.04L92.0947 33.76V38H89.2147ZM110.063 38V24.8H105.599V22.4H117.407V24.8H112.943V38H110.063ZM121.943 38V22.4H133.183V24.8H124.823V28.8H132.159V31.2H124.823V35.6H133.183V38H121.943ZM142.943 38V22.4H145.823V35.6H152.343V38H142.943ZM166.558 38V22.4H169.438V38H166.558ZM174.426 38V22.4H178.234L184.146 33.52V22.4H187.026V38H183.218L177.306 26.88V38H174.426Z"
-        fill="#333333"
-      />
-    </svg>
+      style={{ maxWidth: '150px', height: 'auto' }}
+    />
   )
 }
 
