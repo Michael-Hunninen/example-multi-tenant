@@ -6,8 +6,9 @@ import { getPayload } from 'payload'
 type CollectionParams = { params: { collection: string } }
 
 export async function GET(req: NextRequest, { params }: CollectionParams) {
-  // Store collection name outside try/catch to ensure it's available in catch block
-  const { collection } = params
+  // Ensure params is properly awaited
+  const resolvedParams = await Promise.resolve(params);
+  const collection = resolvedParams.collection
   
   try {
     const searchParams = req.nextUrl.searchParams
