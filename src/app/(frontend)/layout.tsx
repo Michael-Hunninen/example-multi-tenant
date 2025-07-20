@@ -21,6 +21,8 @@ import { getTenantByDomain } from '@/utilities/getTenantByDomain'
 import './globals.css'
 import { getServerSideURL } from '@/utilities/getURL'
 
+
+
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const { isEnabled } = await draftMode()
   const headersList = await headers()
@@ -32,6 +34,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // Resolve tenant from domain for server-side context
   const tenant = await getTenantByDomain(tenantDomain)
   const tenantId = tenant?.id
+  
+  // Check if this is a dashboard route on the server side
+  const pathname = headersList.get('x-pathname') || ''
+  // More robust check for dashboard routes using both pathname and URL path segments
+  const url = new URL(headersList.get('x-url') || 'http://localhost')
+  const urlPathname = url.pathname
+  const isDashboardRoute = pathname.startsWith('/dashboard') || urlPathname.startsWith('/dashboard')
 
   return (
     <html className={cn(GeistSans.variable, GeistMono.variable)} lang="en" suppressHydrationWarning>
@@ -43,17 +52,26 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body>
         <Providers>
           <BrandingProvider tenantId={tenantId}>
-            <AdminBar
-              adminBarProps={{
-                preview: isEnabled,
-              }}
-            />
-            <Header tenantId={tenantId} />
-            <main className="flex-grow w-full">
+            {/* Admin bar with high z-index to appear above everything */}
+            {/* Hide admin bar on LMS pages, just like the header */}
+            {!isDashboardRoute && (
+              <div className="relative z-[9999]">
+                <AdminBar
+                  adminBarProps={{
+                    preview: isEnabled,
+                  }}
+                />
+              </div>
+            )}
+            {!isDashboardRoute && <Header tenantId={tenantId} />}
+            <main className={cn(
+              "flex-grow w-full",
+              isDashboardRoute ? "pt-0" : "" // Dashboard has its own layout
+            )}>
               {/* TenantIsolationTest temporarily removed to resolve circular dependency */}
               {children}
             </main>
-            <Footer tenantId={tenantId} />
+            {!isDashboardRoute && <Footer tenantId={tenantId} />}
           </BrandingProvider>
         </Providers>
       </body>

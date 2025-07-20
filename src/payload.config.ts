@@ -20,6 +20,14 @@ import { Posts } from './collections/Posts'
 import { Categories } from './collections/Categories'
 import { Branding } from './collections/Branding'
 import { Domains } from './collections/Domains'
+// LMS Collections
+import { Videos } from './collections/Videos'
+import { Programs } from './collections/Programs'
+import { Enrollments } from './collections/Enrollments'
+import { VideoProgress } from './collections/VideoProgress'
+import { Comments } from './collections/Comments'
+import { Achievements } from './collections/Achievements'
+import { UserAchievements } from './collections/UserAchievements'
 // Forms collection is provided by the FormBuilder plugin
 import { multiTenantPlugin } from '@payloadcms/plugin-multi-tenant'
 import { isSuperAdmin } from './access/isSuperAdmin'
@@ -94,7 +102,26 @@ export default buildConfig({
       ],
     },
   },
-  collections: [Users, Tenants, Domains, Branding, Pages, Media, Posts, Categories, Headers, Footers],
+  collections: [
+    Users, 
+    Tenants, 
+    Domains, 
+    Branding, 
+    Pages, 
+    Media, 
+    Posts, 
+    Categories, 
+    Headers, 
+    Footers,
+    // LMS Collections
+    Videos,
+    Programs,
+    Enrollments,
+    VideoProgress,
+    Comments,
+    Achievements,
+    UserAchievements,
+  ],
   db: mongooseAdapter({
     url: process.env.DATABASE_URI as string,
     connectOptions: {
@@ -161,6 +188,28 @@ export default buildConfig({
         // users: removed from multi-tenant plugin - uses tenantsArrayField instead of standard tenant field
         forms: {
           // Standard collection - each tenant has their own forms
+        },
+        // LMS Collections
+        videos: {
+          // Standard collection - each tenant has their own videos
+        },
+        programs: {
+          // Standard collection - each tenant has their own programs
+        },
+        enrollments: {
+          // Standard collection - each tenant has their own enrollments
+        },
+        'video-progress': {
+          // Standard collection - each tenant has their own video progress
+        },
+        comments: {
+          // Standard collection - each tenant has their own comments
+        },
+        achievements: {
+          // Standard collection - each tenant has their own achievements
+        },
+        'user-achievements': {
+          // Standard collection - each tenant has their own user achievements
         },
         '_branding_': {
           // Set as a global collection (one branding per tenant)

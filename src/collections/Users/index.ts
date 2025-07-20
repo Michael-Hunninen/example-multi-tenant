@@ -47,9 +47,9 @@ const Users: CollectionConfig = {
       },
       name: 'roles',
       type: 'select',
-      defaultValue: ['user'],
+      defaultValue: ['regular'],
       hasMany: true,
-      options: ['super-admin', 'user'],
+      options: ['super-admin', 'admin', 'business', 'regular'],
       access: {
         update: ({ req }) => {
           return isSuperAdmin(req.user)

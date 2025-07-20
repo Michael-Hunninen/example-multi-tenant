@@ -6,7 +6,17 @@ import { isSuperAdmin } from '../../../access/isSuperAdmin'
 import { getUserTenantIDs } from '../../../utilities/getUserTenantIDs'
 
 export const createAccess: Access<User> = ({ req }) => {
+  // Allow public registration for regular users (no authentication required)
   if (!req.user) {
+    // Check if this is a registration request for a regular user
+    const isRegularUserRegistration = req.data?.roles?.length === 1 && req.data?.roles?.includes('regular')
+    
+    if (isRegularUserRegistration) {
+      console.log('CREATE ACCESS DEBUG - Allowing public registration for regular user')
+      return true
+    }
+    
+    console.log('CREATE ACCESS DEBUG - No user and not regular registration, denying access')
     return false
   }
 

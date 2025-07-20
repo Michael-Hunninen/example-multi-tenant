@@ -77,6 +77,13 @@ export interface Config {
     categories: Category;
     headers: Header;
     footers: Footer;
+    videos: Video;
+    programs: Program;
+    enrollments: Enrollment;
+    'video-progress': VideoProgress;
+    comments: Comment;
+    achievements: Achievement;
+    'user-achievements': UserAchievement;
     forms: Form;
     'form-submissions': FormSubmission;
     redirects: Redirect;
@@ -97,6 +104,13 @@ export interface Config {
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     headers: HeadersSelect<false> | HeadersSelect<true>;
     footers: FootersSelect<false> | FootersSelect<true>;
+    videos: VideosSelect<false> | VideosSelect<true>;
+    programs: ProgramsSelect<false> | ProgramsSelect<true>;
+    enrollments: EnrollmentsSelect<false> | EnrollmentsSelect<true>;
+    'video-progress': VideoProgressSelect<false> | VideoProgressSelect<true>;
+    comments: CommentsSelect<false> | CommentsSelect<true>;
+    achievements: AchievementsSelect<false> | AchievementsSelect<true>;
+    'user-achievements': UserAchievementsSelect<false> | UserAchievementsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
@@ -149,7 +163,7 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: string;
-  roles?: ('super-admin' | 'user')[] | null;
+  roles?: ('super-admin' | 'admin' | 'business' | 'regular')[] | null;
   username?: string | null;
   tenants?:
     | {
@@ -304,6 +318,10 @@ export interface Page {
     | TrainingServicesBlock
     | TestimonialsBlock
     | EventsBlock
+    | LMSHeroBlock
+    | VideoPlayerBlock
+    | CourseGridBlock
+    | DashboardLayoutBlock
   )[];
   meta?: {
     title?: string | null;
@@ -1028,6 +1046,171 @@ export interface EventsBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LMSHeroBlock".
+ */
+export interface LMSHeroBlock {
+  type: 'default' | 'dashboard' | 'course';
+  title: string;
+  subtitle?: string | null;
+  backgroundImage?: (string | null) | Media;
+  primaryButton?: {
+    text?: string | null;
+    url?: string | null;
+    style?: ('primary' | 'secondary' | 'outline') | null;
+  };
+  secondaryButton?: {
+    text?: string | null;
+    url?: string | null;
+    style?: ('primary' | 'secondary' | 'outline') | null;
+  };
+  features?:
+    | {
+        /**
+         * Lucide icon name (e.g., "award", "users", "book-open")
+         */
+        icon?: string | null;
+        title: string;
+        description?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'lmsHero';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "VideoPlayerBlock".
+ */
+export interface VideoPlayerBlock {
+  title: string;
+  description?: string | null;
+  videoType: 'upload' | 'youtube' | 'vimeo' | 'url';
+  videoFile?: (string | null) | Media;
+  videoUrl?: string | null;
+  /**
+   * Custom thumbnail image (optional)
+   */
+  thumbnail?: (string | null) | Media;
+  /**
+   * Video duration (e.g., "5:30")
+   */
+  duration?: string | null;
+  /**
+   * Require user authentication to view this video
+   */
+  requiresAuth?: boolean | null;
+  /**
+   * Which user roles can access this video
+   */
+  allowedRoles?: ('regular' | 'business' | 'admin' | 'super-admin')[] | null;
+  autoplay?: boolean | null;
+  controls?: boolean | null;
+  muted?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'videoPlayer';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CourseGridBlock".
+ */
+export interface CourseGridBlock {
+  title: string;
+  subtitle?: string | null;
+  courses?:
+    | {
+        title: string;
+        description?: string | null;
+        image?: (string | null) | Media;
+        /**
+         * Course duration (e.g., "4 weeks", "12 lessons")
+         */
+        duration?: string | null;
+        level?: ('beginner' | 'intermediate' | 'advanced' | 'all') | null;
+        /**
+         * Course price (e.g., "$99", "Free")
+         */
+        price?: string | null;
+        url: string;
+        featured?: boolean | null;
+        requiresAuth?: boolean | null;
+        allowedRoles?: ('basic' | 'premium' | 'vip')[] | null;
+        tags?:
+          | {
+              tag?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  displayStyle?: ('grid' | 'list' | 'carousel') | null;
+  /**
+   * Show level and category filters
+   */
+  showFilters?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'courseGrid';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "DashboardLayoutBlock".
+ */
+export interface DashboardLayoutBlock {
+  title: string;
+  subtitle?: string | null;
+  showWelcomeMessage?: boolean | null;
+  welcomeMessage?: string | null;
+  quickStats?:
+    | {
+        label: string;
+        value: string;
+        /**
+         * Lucide icon name
+         */
+        icon?: string | null;
+        color?: ('teal' | 'blue' | 'green' | 'yellow' | 'red' | 'purple') | null;
+        id?: string | null;
+      }[]
+    | null;
+  recentActivity?:
+    | {
+        title: string;
+        description?: string | null;
+        /**
+         * Relative time (e.g., "2 hours ago")
+         */
+        timestamp?: string | null;
+        type?: ('video' | 'course' | 'achievement' | 'assignment') | null;
+        url?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  quickActions?:
+    | {
+        title: string;
+        description?: string | null;
+        url: string;
+        /**
+         * Lucide icon name
+         */
+        icon?: string | null;
+        color?: ('teal' | 'blue' | 'green' | 'yellow' | 'red' | 'purple') | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Require user authentication to view dashboard
+   */
+  requiresAuth?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'dashboardLayout';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "_branding_".
  */
 export interface _Branding_ {
@@ -1117,6 +1300,423 @@ export interface Footer {
         id?: string | null;
       }[]
     | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "videos".
+ */
+export interface Video {
+  id: string;
+  tenant?: (string | null) | Tenant;
+  /**
+   * The title of the video
+   */
+  title: string;
+  /**
+   * URL-friendly version of the title
+   */
+  slug: string;
+  /**
+   * Detailed description of the video content
+   */
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Video thumbnail image
+   */
+  thumbnail?: (string | null) | Media;
+  /**
+   * The video file
+   */
+  videoFile?: (string | null) | Media;
+  /**
+   * External video URL (YouTube, Vimeo, etc.)
+   */
+  videoUrl?: string | null;
+  /**
+   * Video duration in seconds
+   */
+  duration?: number | null;
+  /**
+   * Video category
+   */
+  category?: (string | null) | Category;
+  /**
+   * Tags for better searchability
+   */
+  tags?:
+    | {
+        tag?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Video chapters for navigation
+   */
+  chapters?:
+    | {
+        title: string;
+        /**
+         * Start time in seconds
+         */
+        startTime: number;
+        description?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Video instructor
+   */
+  instructor?: (string | null) | User;
+  difficulty?: ('beginner' | 'intermediate' | 'advanced') | null;
+  status?: ('draft' | 'published' | 'archived') | null;
+  /**
+   * Feature this video on the dashboard
+   */
+  featured?: boolean | null;
+  /**
+   * Required access level to view this video
+   */
+  accessLevel?: ('free' | 'basic' | 'premium' | 'vip') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "programs".
+ */
+export interface Program {
+  id: string;
+  tenant?: (string | null) | Tenant;
+  /**
+   * The title of the program
+   */
+  title: string;
+  /**
+   * URL-friendly version of the title
+   */
+  slug: string;
+  /**
+   * Detailed description of the program
+   */
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Brief description for cards and previews
+   */
+  shortDescription?: string | null;
+  /**
+   * Program thumbnail image
+   */
+  thumbnail?: (string | null) | Media;
+  /**
+   * Program instructor
+   */
+  instructor: string | User;
+  /**
+   * Program category
+   */
+  category?: (string | null) | Category;
+  /**
+   * Program lessons in order
+   */
+  lessons?:
+    | {
+        title: string;
+        description?: string | null;
+        video?: (string | null) | Video;
+        /**
+         * Lesson duration in minutes
+         */
+        duration?: number | null;
+        /**
+         * Lesson order within the program
+         */
+        order: number;
+        /**
+         * Allow free preview of this lesson
+         */
+        isPreview?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  difficulty?: ('beginner' | 'intermediate' | 'advanced') | null;
+  /**
+   * Total program duration in hours
+   */
+  duration?: number | null;
+  /**
+   * Program price (0 for free)
+   */
+  price?: number | null;
+  /**
+   * Required access level to enroll in this program
+   */
+  accessLevel?: ('free' | 'basic' | 'premium' | 'vip') | null;
+  status?: ('draft' | 'published' | 'archived') | null;
+  /**
+   * Feature this program on the dashboard
+   */
+  featured?: boolean | null;
+  /**
+   * Maximum number of enrollments (0 for unlimited)
+   */
+  enrollmentLimit?: number | null;
+  /**
+   * Tags for better searchability
+   */
+  tags?:
+    | {
+        tag?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "enrollments".
+ */
+export interface Enrollment {
+  id: string;
+  tenant?: (string | null) | Tenant;
+  /**
+   * The enrolled user
+   */
+  user: string | User;
+  /**
+   * The program the user is enrolled in
+   */
+  program: string | Program;
+  status?: ('active' | 'completed' | 'paused' | 'cancelled') | null;
+  /**
+   * Completion progress as percentage (0-100)
+   */
+  progress?: number | null;
+  /**
+   * Track which lessons have been completed
+   */
+  completedLessons?:
+    | {
+        lessonIndex: number;
+        completedAt: string;
+        /**
+         * Time spent on lesson in minutes
+         */
+        timeSpent?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * When the user enrolled in the program
+   */
+  enrolledAt?: string | null;
+  /**
+   * When the user completed the program
+   */
+  completedAt?: string | null;
+  /**
+   * When the user last accessed the program
+   */
+  lastAccessedAt?: string | null;
+  /**
+   * Total time spent in the program (minutes)
+   */
+  totalTimeSpent?: number | null;
+  /**
+   * Whether a completion certificate has been issued
+   */
+  certificateIssued?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "video-progress".
+ */
+export interface VideoProgress {
+  id: string;
+  tenant?: (string | null) | Tenant;
+  /**
+   * The user watching the video
+   */
+  user: string | User;
+  /**
+   * The video being watched
+   */
+  video: string | Video;
+  /**
+   * Watch progress as percentage (0-100)
+   */
+  progress?: number | null;
+  /**
+   * Current playback position in seconds
+   */
+  currentTime?: number | null;
+  /**
+   * Total video duration in seconds
+   */
+  duration?: number | null;
+  /**
+   * Whether the video has been completed
+   */
+  completed?: boolean | null;
+  /**
+   * Total time spent watching this video in seconds
+   */
+  watchTime?: number | null;
+  /**
+   * When the video was last watched
+   */
+  lastWatchedAt?: string | null;
+  /**
+   * When the video was first watched
+   */
+  firstWatchedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comments".
+ */
+export interface Comment {
+  id: string;
+  tenant?: (string | null) | Tenant;
+  /**
+   * The user who posted the comment
+   */
+  user: string | User;
+  /**
+   * The comment content
+   */
+  content: string;
+  /**
+   * The video this comment is on
+   */
+  video?: (string | null) | Video;
+  /**
+   * The program this comment is on
+   */
+  program?: (string | null) | Program;
+  /**
+   * Parent comment for replies
+   */
+  parentComment?: (string | null) | Comment;
+  /**
+   * Video timestamp for the comment (in seconds)
+   */
+  timestamp?: number | null;
+  status?: ('pending' | 'approved' | 'rejected') | null;
+  /**
+   * Number of likes on this comment
+   */
+  likes?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "achievements".
+ */
+export interface Achievement {
+  id: string;
+  tenant?: (string | null) | Tenant;
+  /**
+   * Achievement title
+   */
+  title: string;
+  /**
+   * Achievement description
+   */
+  description: string;
+  /**
+   * Achievement badge/icon
+   */
+  icon?: (string | null) | Media;
+  type: 'video_completion' | 'program_completion' | 'streak' | 'time_spent' | 'first_login' | 'comment' | 'special';
+  /**
+   * Points awarded for this achievement
+   */
+  points?: number | null;
+  /**
+   * Achievement criteria
+   */
+  criteria?: {
+    /**
+     * Number of videos to complete (for video completion achievements)
+     */
+    videosToComplete?: number | null;
+    /**
+     * Number of programs to complete (for program completion achievements)
+     */
+    programsToComplete?: number | null;
+    /**
+     * Number of consecutive days (for streak achievements)
+     */
+    streakDays?: number | null;
+    /**
+     * Total hours to spend learning (for time spent achievements)
+     */
+    timeSpentHours?: number | null;
+  };
+  status?: ('active' | 'inactive') | null;
+  rarity?: ('common' | 'uncommon' | 'rare' | 'epic' | 'legendary') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "user-achievements".
+ */
+export interface UserAchievement {
+  id: string;
+  tenant?: (string | null) | Tenant;
+  /**
+   * The user who earned the achievement
+   */
+  user: string | User;
+  /**
+   * The achievement that was earned
+   */
+  achievement: string | Achievement;
+  /**
+   * When the achievement was earned
+   */
+  earnedAt?: string | null;
+  /**
+   * Progress towards earning this achievement (0-100)
+   */
+  progress?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1298,6 +1898,34 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'footers';
         value: string | Footer;
+      } | null)
+    | ({
+        relationTo: 'videos';
+        value: string | Video;
+      } | null)
+    | ({
+        relationTo: 'programs';
+        value: string | Program;
+      } | null)
+    | ({
+        relationTo: 'enrollments';
+        value: string | Enrollment;
+      } | null)
+    | ({
+        relationTo: 'video-progress';
+        value: string | VideoProgress;
+      } | null)
+    | ({
+        relationTo: 'comments';
+        value: string | Comment;
+      } | null)
+    | ({
+        relationTo: 'achievements';
+        value: string | Achievement;
+      } | null)
+    | ({
+        relationTo: 'user-achievements';
+        value: string | UserAchievement;
       } | null)
     | ({
         relationTo: 'forms';
@@ -1506,6 +2134,10 @@ export interface PagesSelect<T extends boolean = true> {
         trainingServicesBlock?: T | TrainingServicesBlockSelect<T>;
         testimonialsBlock?: T | TestimonialsBlockSelect<T>;
         eventsBlock?: T | EventsBlockSelect<T>;
+        lmsHero?: T | LMSHeroBlockSelect<T>;
+        videoPlayer?: T | VideoPlayerBlockSelect<T>;
+        courseGrid?: T | CourseGridBlockSelect<T>;
+        dashboardLayout?: T | DashboardLayoutBlockSelect<T>;
       };
   meta?:
     | T
@@ -1712,6 +2344,135 @@ export interface EventsBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LMSHeroBlock_select".
+ */
+export interface LMSHeroBlockSelect<T extends boolean = true> {
+  type?: T;
+  title?: T;
+  subtitle?: T;
+  backgroundImage?: T;
+  primaryButton?:
+    | T
+    | {
+        text?: T;
+        url?: T;
+        style?: T;
+      };
+  secondaryButton?:
+    | T
+    | {
+        text?: T;
+        url?: T;
+        style?: T;
+      };
+  features?:
+    | T
+    | {
+        icon?: T;
+        title?: T;
+        description?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "VideoPlayerBlock_select".
+ */
+export interface VideoPlayerBlockSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  videoType?: T;
+  videoFile?: T;
+  videoUrl?: T;
+  thumbnail?: T;
+  duration?: T;
+  requiresAuth?: T;
+  allowedRoles?: T;
+  autoplay?: T;
+  controls?: T;
+  muted?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CourseGridBlock_select".
+ */
+export interface CourseGridBlockSelect<T extends boolean = true> {
+  title?: T;
+  subtitle?: T;
+  courses?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+        duration?: T;
+        level?: T;
+        price?: T;
+        url?: T;
+        featured?: T;
+        requiresAuth?: T;
+        allowedRoles?: T;
+        tags?:
+          | T
+          | {
+              tag?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  displayStyle?: T;
+  showFilters?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "DashboardLayoutBlock_select".
+ */
+export interface DashboardLayoutBlockSelect<T extends boolean = true> {
+  title?: T;
+  subtitle?: T;
+  showWelcomeMessage?: T;
+  welcomeMessage?: T;
+  quickStats?:
+    | T
+    | {
+        label?: T;
+        value?: T;
+        icon?: T;
+        color?: T;
+        id?: T;
+      };
+  recentActivity?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        timestamp?: T;
+        type?: T;
+        url?: T;
+        id?: T;
+      };
+  quickActions?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        url?: T;
+        icon?: T;
+        color?: T;
+        id?: T;
+      };
+  requiresAuth?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media_select".
  */
 export interface MediaSelect<T extends boolean = true> {
@@ -1890,6 +2651,180 @@ export interface FootersSelect<T extends boolean = true> {
             };
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "videos_select".
+ */
+export interface VideosSelect<T extends boolean = true> {
+  tenant?: T;
+  title?: T;
+  slug?: T;
+  description?: T;
+  thumbnail?: T;
+  videoFile?: T;
+  videoUrl?: T;
+  duration?: T;
+  category?: T;
+  tags?:
+    | T
+    | {
+        tag?: T;
+        id?: T;
+      };
+  chapters?:
+    | T
+    | {
+        title?: T;
+        startTime?: T;
+        description?: T;
+        id?: T;
+      };
+  instructor?: T;
+  difficulty?: T;
+  status?: T;
+  featured?: T;
+  accessLevel?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "programs_select".
+ */
+export interface ProgramsSelect<T extends boolean = true> {
+  tenant?: T;
+  title?: T;
+  slug?: T;
+  description?: T;
+  shortDescription?: T;
+  thumbnail?: T;
+  instructor?: T;
+  category?: T;
+  lessons?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        video?: T;
+        duration?: T;
+        order?: T;
+        isPreview?: T;
+        id?: T;
+      };
+  difficulty?: T;
+  duration?: T;
+  price?: T;
+  accessLevel?: T;
+  status?: T;
+  featured?: T;
+  enrollmentLimit?: T;
+  tags?:
+    | T
+    | {
+        tag?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "enrollments_select".
+ */
+export interface EnrollmentsSelect<T extends boolean = true> {
+  tenant?: T;
+  user?: T;
+  program?: T;
+  status?: T;
+  progress?: T;
+  completedLessons?:
+    | T
+    | {
+        lessonIndex?: T;
+        completedAt?: T;
+        timeSpent?: T;
+        id?: T;
+      };
+  enrolledAt?: T;
+  completedAt?: T;
+  lastAccessedAt?: T;
+  totalTimeSpent?: T;
+  certificateIssued?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "video-progress_select".
+ */
+export interface VideoProgressSelect<T extends boolean = true> {
+  tenant?: T;
+  user?: T;
+  video?: T;
+  progress?: T;
+  currentTime?: T;
+  duration?: T;
+  completed?: T;
+  watchTime?: T;
+  lastWatchedAt?: T;
+  firstWatchedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comments_select".
+ */
+export interface CommentsSelect<T extends boolean = true> {
+  tenant?: T;
+  user?: T;
+  content?: T;
+  video?: T;
+  program?: T;
+  parentComment?: T;
+  timestamp?: T;
+  status?: T;
+  likes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "achievements_select".
+ */
+export interface AchievementsSelect<T extends boolean = true> {
+  tenant?: T;
+  title?: T;
+  description?: T;
+  icon?: T;
+  type?: T;
+  points?: T;
+  criteria?:
+    | T
+    | {
+        videosToComplete?: T;
+        programsToComplete?: T;
+        streakDays?: T;
+        timeSpentHours?: T;
+      };
+  status?: T;
+  rarity?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "user-achievements_select".
+ */
+export interface UserAchievementsSelect<T extends boolean = true> {
+  tenant?: T;
+  user?: T;
+  achievement?: T;
+  earnedAt?: T;
+  progress?: T;
   updatedAt?: T;
   createdAt?: T;
 }

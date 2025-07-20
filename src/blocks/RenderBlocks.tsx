@@ -18,6 +18,12 @@ import { TrainingServices } from '../components/TrainingServices'
 import { Testimonials } from '../components/Testimonials'
 import { EventsBlock } from './Events'
 
+// Import LMS-specific components
+import { LMSHeroBlockComponent } from './LMSHero/Component'
+import { VideoPlayerBlockComponent } from './VideoPlayer/Component'
+import { CourseGridBlockComponent } from './CourseGrid/Component'
+import { DashboardLayoutBlockComponent } from './DashboardLayout/Component'
+
 // Define types for custom blocks
 type CustomBlockType = 
   | 'hero'
@@ -27,6 +33,10 @@ type CustomBlockType =
   | 'trainingServicesBlock' 
   | 'testimonialsBlock' 
   | 'eventsBlock'
+  | 'lmsHero'
+  | 'videoPlayer'
+  | 'courseGrid'
+  | 'dashboardLayout'
 
 // Extended block type that includes our custom types
 type ExtendedBlockType = Page['layout'][0]['blockType'] | CustomBlockType
@@ -129,6 +139,19 @@ export const RenderBlocks: React.FC<{
               
             case 'eventsBlock':
               return <EventsBlock key={index} {...(block as any)} />
+              
+            // LMS-specific components
+            case 'lmsHero':
+              return <LMSHeroBlockComponent key={index} {...(block as any)} />
+              
+            case 'videoPlayer':
+              return <VideoPlayerBlockComponent key={index} {...(block as any)} />
+              
+            case 'courseGrid':
+              return <CourseGridBlockComponent key={index} {...(block as any)} />
+              
+            case 'dashboardLayout':
+              return <DashboardLayoutBlockComponent key={index} {...(block as any)} />
               
             default:
               // Fallback for unimplemented block types

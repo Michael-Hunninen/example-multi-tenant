@@ -43,7 +43,12 @@ export const AdminBar: React.FC<{
   const router = useRouter()
 
   const onAuthChange = React.useCallback((user: PayloadMeUser) => {
-    setShow(Boolean(user?.id))
+    // Only show admin bar for admin-level users, not regular LMS users
+    const userWithRoles = user as PayloadMeUser & { roles?: string[] }
+    const isAdminUser = userWithRoles?.roles?.some((role: string) => 
+      ['super-admin', 'admin', 'business'].includes(role)
+    )
+    setShow(Boolean(user?.id && isAdminUser))
   }, [])
 
   return (

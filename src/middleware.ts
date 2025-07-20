@@ -5,9 +5,29 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const hostname = request.headers.get('host') || 'localhost:3000'
 
-  // Skip middleware for admin, API routes, and static files
+  // Handle admin route access control
+  if (pathname.startsWith('/admin')) {
+    try {
+      // Check if user has admin access by examining the payload-token cookie
+      const payloadToken = request.cookies.get('payload-token')?.value
+      
+      if (!payloadToken) {
+        // No token, redirect to login
+        return NextResponse.redirect(new URL('/login', request.url))
+      }
+      
+      // For now, we'll let the admin panel handle the detailed auth check
+      // The AdminBar component will hide for regular users
+      // Additional server-side validation can be added here if needed
+      return NextResponse.next()
+    } catch (error) {
+      console.error('Admin access check error:', error)
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
+  }
+
+  // Skip middleware for API routes and static files
   if (
-    pathname.startsWith('/admin') ||
     pathname.startsWith('/api') ||
     pathname.startsWith('/_next') ||
     pathname.startsWith('/favicon') ||
@@ -16,9 +36,10 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Clone the request headers and add tenant domain information
+  // Clone the request headers and add tenant domain and pathname information
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set('x-tenant-domain', hostname)
+  requestHeaders.set('x-pathname', pathname)
 
   // For development, set a default tenant
   if (hostname === 'localhost:3000' || hostname === 'localhost' || hostname === '127.0.0.1') {

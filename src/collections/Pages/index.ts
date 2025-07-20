@@ -11,6 +11,10 @@ import { MediaBlock } from '../../blocks/MediaBlock/config'
 import { TestimonialsBlock } from '../../blocks/Testimonials/config'
 import { TrainerProfileBlock } from '../../blocks/TrainerProfile/config'
 import { TrainingServicesBlock } from '../../blocks/TrainingServices/config'
+import { LMSHero } from '../../blocks/LMSHero/config'
+import { VideoPlayer } from '../../blocks/VideoPlayer/config'
+import { CourseGrid } from '../../blocks/CourseGrid/config'
+import { DashboardLayout } from '../../blocks/DashboardLayout/config'
 import { hero } from '../../heros/config'
 import { slugField } from '../../fields/slug'
 import { populatePublishedAt } from '../../hooks/populatePublishedAt'
@@ -104,7 +108,11 @@ export const Pages: CollectionConfig<'pages'> = {
                 HorseShowcaseBlock, 
                 TrainingServicesBlock, 
                 TestimonialsBlock, 
-                EventsBlock
+                EventsBlock,
+                LMSHero,
+                VideoPlayer,
+                CourseGrid,
+                DashboardLayout
               ],
               required: true,
               admin: {
