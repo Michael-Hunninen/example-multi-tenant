@@ -34,7 +34,10 @@ export default buildConfig({
   admin: {
     components: {
       // Adding BeforeDashboard component for admin UI
-      beforeDashboard: ['@/components/BeforeDashboard'],
+      beforeDashboard: [
+        '@/components/BeforeDashboard',
+        '@/components/AnalyticsDashboard'
+      ],
       // Adding Logo and Icon components for whitelabel
       graphics: {
         Icon: '/graphics/Icon/index.tsx#Icon',
