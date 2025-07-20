@@ -92,6 +92,91 @@ export const Branding: CollectionConfig = {
       label: 'Accent Color',
       defaultValue: '#ffffff',
     },
+    {
+      name: 'headerBackgroundColor',
+      type: 'text',
+      label: 'Header Background Color',
+      defaultValue: 'transparent',
+    },
+    {
+      name: 'headerTextColor',
+      type: 'text',
+      label: 'Header Text Color',
+      defaultValue: '#000000',
+    },
+    {
+      name: 'headerLinks',
+      type: 'array',
+      label: 'Header Navigation Links',
+      minRows: 0,
+      maxRows: 10,
+      labels: {
+        singular: 'Navigation Link',
+        plural: 'Navigation Links',
+      },
+      fields: [
+        {
+          name: 'label',
+          type: 'text',
+          required: true,
+          label: 'Link Text',
+        },
+        {
+          name: 'url',
+          type: 'text',
+          required: true,
+          label: 'Link URL',
+        },
+      ],
+    },
+    {
+      name: 'footerBackgroundColor',
+      type: 'text',
+      label: 'Footer Background Color',
+      defaultValue: '#000000',
+    },
+    {
+      name: 'footerTextColor',
+      type: 'text',
+      label: 'Footer Text Color',
+      defaultValue: '#ffffff',
+    },
+    {
+      name: 'footerLinkColor',
+      type: 'text',
+      label: 'Footer Link Color',
+      defaultValue: '#ffffff',
+    },
+    {
+      name: 'copyrightText',
+      type: 'text',
+      label: 'Copyright Text',
+    },
+    {
+      name: 'footerLinks',
+      type: 'array',
+      label: 'Footer Navigation Links',
+      minRows: 0,
+      maxRows: 10,
+      labels: {
+        singular: 'Footer Link',
+        plural: 'Footer Links',
+      },
+      fields: [
+        {
+          name: 'label',
+          type: 'text',
+          required: true,
+          label: 'Link Text',
+        },
+        {
+          name: 'url',
+          type: 'text',
+          required: true,
+          label: 'Link URL',
+        },
+      ],
+    },
   ],
   versions: {
     drafts: true,

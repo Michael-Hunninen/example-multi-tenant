@@ -1044,6 +1044,26 @@ export interface _Branding_ {
   ogTitle?: string | null;
   primaryColor?: string | null;
   accentColor?: string | null;
+  headerBackgroundColor?: string | null;
+  headerTextColor?: string | null;
+  headerLinks?:
+    | {
+        label: string;
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  footerBackgroundColor?: string | null;
+  footerTextColor?: string | null;
+  footerLinkColor?: string | null;
+  copyrightText?: string | null;
+  footerLinks?:
+    | {
+        label: string;
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -1420,6 +1440,26 @@ export interface _Branding_Select<T extends boolean = true> {
   ogTitle?: T;
   primaryColor?: T;
   accentColor?: T;
+  headerBackgroundColor?: T;
+  headerTextColor?: T;
+  headerLinks?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        id?: T;
+      };
+  footerBackgroundColor?: T;
+  footerTextColor?: T;
+  footerLinkColor?: T;
+  copyrightText?: T;
+  footerLinks?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   _status?: T;

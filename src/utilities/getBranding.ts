@@ -41,6 +41,26 @@ export type BrandingSettings = {
   ogTitle: string
   primaryColor: string
   accentColor: string
+  // Tenant identification (for context)
+  tenantId?: string
+  
+  // Header customization
+  headerBackgroundColor?: string
+  headerTextColor?: string
+  headerLinks?: Array<{
+    label: string
+    url: string
+  }>
+  
+  // Footer customization
+  footerBackgroundColor?: string
+  footerTextColor?: string
+  footerLinkColor?: string
+  copyrightText?: string
+  footerLinks?: Array<{
+    label: string
+    url: string
+  }>
 }
 
 export const getGlobalBranding = async (
