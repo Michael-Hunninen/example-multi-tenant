@@ -18,6 +18,7 @@ import { BrandingProvider } from '@/contexts/BrandingContext'
 // import { TenantBrandingTest } from '@/components/TenantBrandingTest'
 // import { TenantIsolationTest } from '@/components/TenantIsolationTest'
 import { getTenantByDomain } from '@/utilities/getTenantByDomain'
+import { isCustomPagesEnabled } from '@/utilities/getDomainInfo'
 import './globals.css'
 import { getServerSideURL } from '@/utilities/getURL'
 
@@ -41,6 +42,24 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const url = new URL(headersList.get('x-url') || 'http://localhost')
   const urlPathname = url.pathname
   const isDashboardRoute = pathname.startsWith('/dashboard') || urlPathname.startsWith('/dashboard')
+  
+  // Check if custom pages are enabled for this domain
+  const customPagesEnabled = await isCustomPagesEnabled(tenantDomain)
+  
+  // Debug logging for dashboard route detection
+  if (process.env.NODE_ENV === 'development') {
+    console.log('LAYOUT DEBUG - Dashboard route detection:', {
+      pathname,
+      urlPathname,
+      isDashboardRoute,
+      customPagesEnabled,
+      shouldHideLayout: isDashboardRoute || customPagesEnabled
+    })
+  }
+  
+  // Determine if we should hide header/footer/adminBar
+  // Hide on dashboard routes OR when custom pages are enabled
+  const shouldHideLayout = isDashboardRoute || customPagesEnabled
 
   return (
     <html className={cn(GeistSans.variable, GeistMono.variable)} lang="en" suppressHydrationWarning>
@@ -53,8 +72,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <Providers>
           <BrandingProvider tenantId={tenantId}>
             {/* Admin bar with high z-index to appear above everything */}
-            {/* Hide admin bar on LMS pages, just like the header */}
-            {!isDashboardRoute && (
+            {/* Hide admin bar on dashboard routes or when custom pages are enabled */}
+            {!shouldHideLayout && (
               <div className="relative z-[9999]">
                 <AdminBar
                   adminBarProps={{
@@ -63,15 +82,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 />
               </div>
             )}
-            {!isDashboardRoute && <Header tenantId={tenantId} />}
+            {!shouldHideLayout && <Header tenantId={tenantId} />}
             <main className={cn(
               "flex-grow w-full",
-              isDashboardRoute ? "pt-0" : "" // Dashboard has its own layout
+              shouldHideLayout ? "pt-0" : "" // Dashboard and custom pages have their own layout
             )}>
               {/* TenantIsolationTest temporarily removed to resolve circular dependency */}
               {children}
             </main>
-            {!isDashboardRoute && <Footer tenantId={tenantId} />}
+            {!shouldHideLayout && <Footer tenantId={tenantId} />}
           </BrandingProvider>
         </Providers>
       </body>

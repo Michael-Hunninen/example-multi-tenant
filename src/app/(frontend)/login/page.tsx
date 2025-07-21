@@ -1,10 +1,11 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { AuthProvider, useAuth } from '@/components/LMSAuth/AuthWrapper'
 import { Button } from '@/components/ui/button'
+import GenericLogin from '../_components/GenericLogin'
 
 // Internal component that uses auth context
 function LoginForm() {
@@ -12,9 +13,57 @@ function LoginForm() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [customPagesEnabled, setCustomPagesEnabled] = useState<boolean | null>(null)
+  const [layoutLoading, setLayoutLoading] = useState(true)
   
   const { login, user, isAuthenticated, isLoading: authLoading } = useAuth()
   const router = useRouter()
+  
+  useEffect(() => {
+    async function checkCustomPagesStatus() {
+      try {
+        // Get current domain from window location
+        const currentDomain = window.location.host
+        
+        // Fetch domain info to check if custom pages are enabled
+        const response = await fetch(`/api/domain-info?domain=${currentDomain}`)
+        if (response.ok) {
+          const domainInfo = await response.json()
+          setCustomPagesEnabled(domainInfo?.enableCustomPages === true)
+        } else {
+          // Default to false if we can't fetch domain info
+          setCustomPagesEnabled(false)
+        }
+      } catch (error) {
+        console.error('Error checking custom pages status:', error)
+        // Default to false on error
+        setCustomPagesEnabled(false)
+      } finally {
+        setLayoutLoading(false)
+      }
+    }
+    
+    checkCustomPagesStatus()
+  }, [])
+  
+  // Show loading while we determine which layout to use
+  if (layoutLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="h-8 w-8 border-4 border-gray-300 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+  
+  // If custom pages are NOT enabled, use the generic login
+  if (customPagesEnabled === false) {
+    return <GenericLogin />
+  }
+  
+  // Otherwise, use the branded JG Performance Horses login (rest of existing code)
   
   // Redirect if already authenticated
   React.useEffect(() => {

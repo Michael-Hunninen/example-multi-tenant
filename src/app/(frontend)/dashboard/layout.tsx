@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense, useState } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import type React from "react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
@@ -20,6 +20,11 @@ import { MobileBottomNav } from "@/components/MobileBottomNav"
 import { cn } from "@/utilities/cn"
 import { AuthGuard, useAuth, AuthProvider } from '@/components/LMSAuth/AuthWrapper'
 import { useBranding } from '@/hooks/useBranding'
+import GenericDashboardLayout from '../_components/GenericDashboardLayout'
+
+interface DashboardLayoutProps {
+  children: React.ReactNode;
+}
 
 interface DashboardContentProps {
   children: React.ReactNode;
@@ -30,6 +35,54 @@ function DashboardContent({ children }: DashboardContentProps) {
   const { user, logout } = useAuth()
   const { branding, loading: brandingLoading } = useBranding()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [customPagesEnabled, setCustomPagesEnabled] = useState<boolean | null>(null)
+  const [layoutLoading, setLayoutLoading] = useState(true)
+  
+  useEffect(() => {
+    async function checkCustomPagesStatus() {
+      try {
+        // Get current domain from window location
+        const currentDomain = window.location.host
+        
+        // Fetch domain info to check if custom pages are enabled
+        const response = await fetch(`/api/domain-info?domain=${currentDomain}`)
+        if (response.ok) {
+          const domainInfo = await response.json()
+          setCustomPagesEnabled(domainInfo?.enableCustomPages === true)
+        } else {
+          // Default to false if we can't fetch domain info
+          setCustomPagesEnabled(false)
+        }
+      } catch (error) {
+        console.error('Error checking custom pages status:', error)
+        // Default to false on error
+        setCustomPagesEnabled(false)
+      } finally {
+        setLayoutLoading(false)
+      }
+    }
+    
+    checkCustomPagesStatus()
+  }, [])
+  
+  // Show loading while we determine which layout to use
+  if (layoutLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="h-8 w-8 border-4 border-gray-300 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    )
+  }
+  
+  // If custom pages are NOT enabled, use the generic layout
+  if (customPagesEnabled === false) {
+    return <GenericDashboardLayout>{children}</GenericDashboardLayout>
+  }
+  
+  // Otherwise, use the branded JG Performance Horses layout (rest of existing code)
 
   // AuthGuard ensures user is not null, but we add safety checks for TypeScript
   if (!user) {
@@ -390,17 +443,11 @@ function DashboardContent({ children }: DashboardContentProps) {
   )
 }
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <AuthProvider>
       <AuthGuard>
-        <DashboardContent>
-          {children}
-        </DashboardContent>
+        <DashboardContent>{children}</DashboardContent>
       </AuthGuard>
     </AuthProvider>
   )

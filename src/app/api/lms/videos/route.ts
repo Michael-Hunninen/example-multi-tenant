@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getPayload } from 'payload'
-import config from '@/payload.config'
+import { getTenantByDomain } from '@/utilities/getTenantByDomain'
+import { getTenantVideos } from '@/utilities/tenantAwareLmsData'
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,33 +11,21 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '12')
     const page = parseInt(searchParams.get('page') || '1')
     
-    const payload = await getPayload({ config })
+    // Get tenant from domain
+    const domain = request.headers.get('host') || 'localhost:3000'
+    const tenant = await getTenantByDomain(domain)
     
-    // Build where clause for filtering
-    const where: any = {}
-    
-    if (category && category !== 'All') {
-      where['category.name'] = { equals: category }
+    if (!tenant) {
+      return NextResponse.json({ error: 'Tenant not found' }, { status: 404 })
     }
     
-    if (difficulty && difficulty !== 'All') {
-      where.difficulty = { equals: difficulty.toLowerCase() }
-    }
-    
-    if (search) {
-      where.or = [
-        { title: { contains: search } },
-        { description: { contains: search } }
-      ]
-    }
-    
-    const videos = await payload.find({
-      collection: 'videos',
-      where,
+    // Use tenant-aware utility function
+    const videos = await getTenantVideos(tenant.id, {
       limit,
       page,
-      depth: 2,
-      sort: '-createdAt'
+      category: category || undefined,
+      difficulty: difficulty || undefined,
+      search: search || undefined
     })
     
     return NextResponse.json(videos)

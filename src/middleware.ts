@@ -36,10 +36,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Clone the request headers and add tenant domain and pathname information
+  // Clone the request headers and add tenant domain, pathname, and URL information
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set('x-tenant-domain', hostname)
   requestHeaders.set('x-pathname', pathname)
+  requestHeaders.set('x-url', request.url)
 
   // For development, set a default tenant
   if (hostname === 'localhost:3000' || hostname === 'localhost' || hostname === '127.0.0.1') {

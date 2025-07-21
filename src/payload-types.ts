@@ -232,6 +232,28 @@ export interface Tenant {
      */
     maxPages?: number | null;
   };
+  /**
+   * Stripe payment processing configuration for this tenant
+   */
+  stripe?: {
+    enabled?: boolean | null;
+    /**
+     * Secret key from Stripe dashboard (starts with sk_)
+     */
+    secretKey?: string | null;
+    /**
+     * Publishable key from Stripe dashboard (starts with pk_)
+     */
+    publishableKey?: string | null;
+    /**
+     * Webhook signing secret from Stripe dashboard (starts with whsec_)
+     */
+    webhookSecret?: string | null;
+    /**
+     * Use Stripe test mode (keys should start with pk_test_ and sk_test_)
+     */
+    isTestMode?: boolean | null;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -251,7 +273,15 @@ export interface Domain {
    */
   isRootDomain?: boolean | null;
   /**
-   * The page to show when visiting this domain (defaults to home page)
+   * Choose what type of landing page to show for this domain
+   */
+  landingPageType?: ('default' | 'page' | 'custom-homepage') | null;
+  /**
+   * Enable custom pages (About, Services, Pricing, Contact) for this domain. When enabled, the main site header, footer, and admin bar will be hidden.
+   */
+  enableCustomPages?: boolean | null;
+  /**
+   * The page to show when visiting this domain
    */
   landingPage?: (string | null) | Page;
   /**
@@ -2351,6 +2381,15 @@ export interface TenantsSelect<T extends boolean = true> {
         maxUsers?: T;
         maxPages?: T;
       };
+  stripe?:
+    | T
+    | {
+        enabled?: T;
+        secretKey?: T;
+        publishableKey?: T;
+        webhookSecret?: T;
+        isTestMode?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2362,6 +2401,8 @@ export interface DomainsSelect<T extends boolean = true> {
   tenant?: T;
   domain?: T;
   isRootDomain?: T;
+  landingPageType?: T;
+  enableCustomPages?: T;
   landingPage?: T;
   isActive?: T;
   isDefault?: T;

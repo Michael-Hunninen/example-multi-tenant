@@ -39,7 +39,7 @@ export const Domains: CollectionConfig = {
   admin: {
     group: 'System',
     useAsTitle: 'domain',
-    defaultColumns: ['domain', 'isRootDomain', 'landingPage', 'isActive', 'isDefault'],
+    defaultColumns: ['domain', 'isRootDomain', 'landingPage', 'enableCustomPages', 'isActive', 'isDefault'],
   },
   fields: [
     {
@@ -64,13 +64,47 @@ export const Domains: CollectionConfig = {
       },
     },
     {
+      name: 'landingPageType',
+      type: 'select',
+      label: 'Landing Page Type',
+      defaultValue: 'default',
+      options: [
+        {
+          label: 'Default Dashboard',
+          value: 'default',
+        },
+        {
+          label: 'Custom Page',
+          value: 'page',
+        },
+        {
+          label: 'Custom Homepage (JG Performance Horses)',
+          value: 'custom-homepage',
+        },
+      ],
+      admin: {
+        description: 'Choose what type of landing page to show for this domain',
+      },
+    },
+    {
+      name: 'enableCustomPages',
+      type: 'checkbox',
+      label: 'Enable Custom Pages',
+      defaultValue: false,
+      admin: {
+        description: 'Enable custom pages (About, Services, Pricing, Contact) for this domain. When enabled, the main site header, footer, and admin bar will be hidden.',
+        position: 'sidebar',
+      },
+    },
+    {
       name: 'landingPage',
       type: 'relationship',
       relationTo: 'pages',
       required: false,
       label: 'Landing Page',
       admin: {
-        description: 'The page to show when visiting this domain (defaults to home page)',
+        description: 'The page to show when visiting this domain',
+        condition: (data, siblingData) => siblingData?.landingPageType === 'page',
       },
       // filterOptions will be handled by multi-tenant plugin for tenant-scoped pages
       // The plugin automatically filters pages by the current tenant context

@@ -1,43 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getPayload } from 'payload'
-import config from '@/payload.config'
+import { getTenantByDomain } from '@/utilities/getTenantByDomain'
+import { getTenantPrograms } from '@/utilities/tenantAwareLmsData'
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const category = searchParams.get('category')
-    const level = searchParams.get('level')
-    const search = searchParams.get('search')
+    const difficulty = searchParams.get('difficulty') || searchParams.get('level') // Support both parameter names
     const limit = parseInt(searchParams.get('limit') || '12')
     const page = parseInt(searchParams.get('page') || '1')
     
-    const payload = await getPayload({ config })
+    // Get tenant from domain
+    const domain = request.headers.get('host') || 'localhost:3000'
+    const tenant = await getTenantByDomain(domain)
     
-    // Build where clause for filtering
-    const where: any = {}
-    
-    if (category && category !== 'All') {
-      where['category.name'] = { equals: category }
+    if (!tenant) {
+      return NextResponse.json({ error: 'Tenant not found' }, { status: 404 })
     }
     
-    if (level && level !== 'All') {
-      where.level = { equals: level.toLowerCase() }
-    }
-    
-    if (search) {
-      where.or = [
-        { title: { contains: search } },
-        { description: { contains: search } }
-      ]
-    }
-    
-    const programs = await payload.find({
-      collection: 'programs',
-      where,
+    // Use tenant-aware utility function
+    const programs = await getTenantPrograms(tenant.id, {
       limit,
       page,
-      depth: 2,
-      sort: '-createdAt'
+      category: category || undefined,
+      difficulty: difficulty || undefined
     })
     
     return NextResponse.json(programs)

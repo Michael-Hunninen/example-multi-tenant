@@ -11,6 +11,7 @@ import Image from "next/image"
 import { Play, Clock, Users, Trophy, BookOpen, TrendingUp, Award, Calendar, ChevronRight, Star, BarChart3 } from "lucide-react"
 import { useAuth } from '@/components/LMSAuth/AuthWrapper'
 import { useEffect, useState } from 'react'
+import DefaultDashboard from '../_components/DefaultDashboard'
 
 // Client component to fetch data with authenticated user
 function DashboardContent() {
@@ -278,5 +279,52 @@ function DashboardContent() {
 
 // Default export for the page
 export default function DashboardPage() {
-  return <DashboardContent />
+  const [customPagesEnabled, setCustomPagesEnabled] = useState<boolean | null>(null)
+  const [loading, setLoading] = useState(true)
+  
+  useEffect(() => {
+    async function checkCustomPagesStatus() {
+      try {
+        // Get current domain from window location
+        const currentDomain = window.location.host
+        
+        // Fetch domain info to check if custom pages are enabled
+        const response = await fetch(`/api/domain-info?domain=${currentDomain}`)
+        if (response.ok) {
+          const domainInfo = await response.json()
+          setCustomPagesEnabled(domainInfo?.enableCustomPages === true)
+        } else {
+          // Default to false if we can't fetch domain info
+          setCustomPagesEnabled(false)
+        }
+      } catch (error) {
+        console.error('Error checking custom pages status:', error)
+        // Default to false on error
+        setCustomPagesEnabled(false)
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    checkCustomPagesStatus()
+  }, [])
+  
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    )
+  }
+  
+  // If custom pages are enabled, show the branded JG Performance Horses dashboard
+  if (customPagesEnabled) {
+    return <DashboardContent />
+  }
+  
+  // Otherwise, show the generic default dashboard
+  return <DefaultDashboard />
 }

@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { Logo } from '@/components/Logo/Logo'
 import { useBrandingContext } from '@/contexts/BrandingContext'
 
@@ -30,6 +31,35 @@ export function Header({ tenantId }: HeaderProps = {}) {
   const { branding, loading } = useBrandingContext();
   const [headerData, setHeaderData] = useState<HeaderData | null>(null);
   const [headerLoading, setHeaderLoading] = useState(true);
+  const [customPagesEnabled, setCustomPagesEnabled] = useState<boolean | null>(null);
+  const [domainLoading, setDomainLoading] = useState(true);
+  const pathname = usePathname();
+  
+  // Check if this is a dashboard route
+  const isDashboardRoute = pathname.startsWith('/dashboard');
+  
+  // Check if custom pages are enabled for this domain
+  useEffect(() => {
+    async function checkCustomPagesStatus() {
+      try {
+        const currentDomain = window.location.host;
+        const response = await fetch(`/api/domain-info?domain=${currentDomain}`);
+        if (response.ok) {
+          const domainInfo = await response.json();
+          setCustomPagesEnabled(domainInfo?.enableCustomPages === true);
+        } else {
+          setCustomPagesEnabled(false);
+        }
+      } catch (error) {
+        console.error('Error checking custom pages status:', error);
+        setCustomPagesEnabled(false);
+      } finally {
+        setDomainLoading(false);
+      }
+    }
+    
+    checkCustomPagesStatus();
+  }, []);
   
   // Fetch tenant-specific header data
   useEffect(() => {
@@ -53,6 +83,14 @@ export function Header({ tenantId }: HeaderProps = {}) {
 
     fetchHeaderData();
   }, [tenantId]);
+  
+  // Hide header if on dashboard route OR if custom pages are enabled
+  const shouldHideHeader = isDashboardRoute || customPagesEnabled === true;
+  
+  // Don't render anything while we're checking domain status or if header should be hidden
+  if (domainLoading || shouldHideHeader) {
+    return null;
+  }
   
   // Define dynamic styles based on branding
   const headerStyle = {
