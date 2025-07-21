@@ -100,5 +100,58 @@ export const Tenants: CollectionConfig = {
         },
       ],
     },
+    {
+      name: 'stripe',
+      type: 'group',
+      label: 'Stripe Configuration',
+      admin: {
+        description: 'Stripe payment processing configuration for this tenant',
+      },
+      fields: [
+        {
+          name: 'enabled',
+          type: 'checkbox',
+          label: 'Enable Stripe',
+          defaultValue: false,
+        },
+        {
+          name: 'secretKey',
+          type: 'text',
+          label: 'Stripe Secret Key',
+          admin: {
+            description: 'Secret key from Stripe dashboard (starts with sk_)',
+            condition: (data) => data?.stripe?.enabled === true,
+          },
+        },
+        {
+          name: 'publishableKey',
+          type: 'text',
+          label: 'Stripe Publishable Key',
+          admin: {
+            description: 'Publishable key from Stripe dashboard (starts with pk_)',
+            condition: (data) => data?.stripe?.enabled === true,
+          },
+        },
+        {
+          name: 'webhookSecret',
+          type: 'text',
+          label: 'Webhook Secret',
+          admin: {
+            description: 'Webhook signing secret from Stripe dashboard (starts with whsec_)',
+            condition: (data) => data?.stripe?.enabled === true,
+          },
+        },
+        {
+          name: 'isTestMode',
+          type: 'checkbox',
+          label: 'Test Mode',
+          defaultValue: true,
+          admin: {
+            description: 'Use Stripe test mode (keys should start with pk_test_ and sk_test_)',
+            condition: (data) => data?.stripe?.enabled === true,
+          },
+        },
+      ],
+    },
   ],
 }

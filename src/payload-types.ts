@@ -84,6 +84,10 @@ export interface Config {
     comments: Comment;
     achievements: Achievement;
     'user-achievements': UserAchievement;
+    products: Product;
+    subscriptions: Subscription;
+    transactions: Transaction;
+    customers: Customer;
     forms: Form;
     'form-submissions': FormSubmission;
     redirects: Redirect;
@@ -111,6 +115,10 @@ export interface Config {
     comments: CommentsSelect<false> | CommentsSelect<true>;
     achievements: AchievementsSelect<false> | AchievementsSelect<true>;
     'user-achievements': UserAchievementsSelect<false> | UserAchievementsSelect<true>;
+    products: ProductsSelect<false> | ProductsSelect<true>;
+    subscriptions: SubscriptionsSelect<false> | SubscriptionsSelect<true>;
+    transactions: TransactionsSelect<false> | TransactionsSelect<true>;
+    customers: CustomersSelect<false> | CustomersSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
@@ -1722,6 +1730,300 @@ export interface UserAchievement {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products".
+ */
+export interface Product {
+  id: string;
+  tenant?: (string | null) | Tenant;
+  /**
+   * Product name displayed to customers
+   */
+  name: string;
+  /**
+   * Product description for customers
+   */
+  description?: string | null;
+  type: 'one_time' | 'subscription' | 'course_access' | 'program_bundle';
+  /**
+   * Price in cents (e.g., 2999 for $29.99)
+   */
+  price: number;
+  currency: 'usd' | 'eur' | 'gbp';
+  /**
+   * Billing interval for subscriptions
+   */
+  recurringInterval?: ('month' | 'year' | 'week') | null;
+  /**
+   * Stripe Product ID (auto-populated)
+   */
+  stripeProductId?: string | null;
+  /**
+   * Stripe Price ID (auto-populated)
+   */
+  stripePriceId?: string | null;
+  /**
+   * List of product features
+   */
+  features?:
+    | {
+        feature: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Access level granted by this product
+   */
+  accessLevel: 'basic' | 'premium' | 'vip' | 'enterprise';
+  /**
+   * Programs included with this product
+   */
+  relatedPrograms?: (string | Program)[] | null;
+  /**
+   * Videos included with this product
+   */
+  relatedVideos?: (string | Video)[] | null;
+  /**
+   * Whether this product is available for purchase
+   */
+  active?: boolean | null;
+  /**
+   * Display this product prominently
+   */
+  featured?: boolean | null;
+  /**
+   * Product image for display
+   */
+  image?: (string | null) | Media;
+  stripeID?: string | null;
+  skipSync?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "subscriptions".
+ */
+export interface Subscription {
+  id: string;
+  tenant?: (string | null) | Tenant;
+  /**
+   * User who owns this subscription
+   */
+  user: string | User;
+  /**
+   * Product being subscribed to
+   */
+  product: string | Product;
+  /**
+   * Stripe Subscription ID
+   */
+  stripeSubscriptionId: string;
+  /**
+   * Stripe Customer ID
+   */
+  stripeCustomerId: string;
+  /**
+   * Current subscription status from Stripe
+   */
+  status: 'active' | 'past_due' | 'canceled' | 'unpaid' | 'incomplete' | 'incomplete_expired' | 'trialing' | 'paused';
+  /**
+   * Start of current billing period
+   */
+  currentPeriodStart?: string | null;
+  /**
+   * End of current billing period
+   */
+  currentPeriodEnd?: string | null;
+  /**
+   * Whether subscription will cancel at period end
+   */
+  cancelAtPeriodEnd?: boolean | null;
+  /**
+   * When subscription was canceled
+   */
+  canceledAt?: string | null;
+  /**
+   * Trial period start date
+   */
+  trialStart?: string | null;
+  /**
+   * Trial period end date
+   */
+  trialEnd?: string | null;
+  /**
+   * Additional metadata from Stripe
+   */
+  metadata?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "transactions".
+ */
+export interface Transaction {
+  id: string;
+  tenant?: (string | null) | Tenant;
+  /**
+   * User who made this transaction
+   */
+  user: string | User;
+  /**
+   * Product purchased (if applicable)
+   */
+  product?: (string | null) | Product;
+  /**
+   * Stripe Payment Intent ID
+   */
+  stripePaymentIntentId?: string | null;
+  /**
+   * Stripe Charge ID
+   */
+  stripeChargeId?: string | null;
+  /**
+   * Stripe Customer ID
+   */
+  stripeCustomerId?: string | null;
+  /**
+   * Transaction amount in cents
+   */
+  amount: number;
+  /**
+   * Currency code (e.g., usd, eur)
+   */
+  currency: string;
+  /**
+   * Transaction status from Stripe
+   */
+  status: 'pending' | 'succeeded' | 'failed' | 'canceled' | 'refunded' | 'partially_refunded';
+  type: 'payment' | 'refund' | 'subscription_payment' | 'setup_fee';
+  /**
+   * Transaction description
+   */
+  description?: string | null;
+  /**
+   * Stripe receipt URL
+   */
+  receiptUrl?: string | null;
+  /**
+   * Amount refunded in cents
+   */
+  refundAmount?: number | null;
+  /**
+   * Reason for refund
+   */
+  refundReason?: string | null;
+  /**
+   * Additional metadata from Stripe
+   */
+  metadata?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Related subscription (for subscription payments)
+   */
+  subscription?: (string | null) | Subscription;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "customers".
+ */
+export interface Customer {
+  id: string;
+  tenant?: (string | null) | Tenant;
+  /**
+   * Associated user account
+   */
+  user: string | User;
+  /**
+   * Stripe Customer ID
+   */
+  stripeCustomerId: string;
+  /**
+   * Customer email address
+   */
+  email: string;
+  /**
+   * Customer full name
+   */
+  name?: string | null;
+  /**
+   * Customer phone number
+   */
+  phone?: string | null;
+  address?: {
+    /**
+     * Address line 1
+     */
+    line1?: string | null;
+    /**
+     * Address line 2
+     */
+    line2?: string | null;
+    /**
+     * City
+     */
+    city?: string | null;
+    /**
+     * State/Province
+     */
+    state?: string | null;
+    /**
+     * Postal/ZIP code
+     */
+    postalCode?: string | null;
+    /**
+     * Country
+     */
+    country?: string | null;
+  };
+  /**
+   * Default Stripe Payment Method ID
+   */
+  defaultPaymentMethod?: string | null;
+  /**
+   * Customer balance in cents
+   */
+  balance?: number | null;
+  /**
+   * Customer preferred currency
+   */
+  currency?: string | null;
+  /**
+   * Additional metadata from Stripe
+   */
+  metadata?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  stripeID?: string | null;
+  skipSync?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "form-submissions".
  */
 export interface FormSubmission {
@@ -1926,6 +2228,22 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'user-achievements';
         value: string | UserAchievement;
+      } | null)
+    | ({
+        relationTo: 'products';
+        value: string | Product;
+      } | null)
+    | ({
+        relationTo: 'subscriptions';
+        value: string | Subscription;
+      } | null)
+    | ({
+        relationTo: 'transactions';
+        value: string | Transaction;
+      } | null)
+    | ({
+        relationTo: 'customers';
+        value: string | Customer;
       } | null)
     | ({
         relationTo: 'forms';
@@ -2825,6 +3143,112 @@ export interface UserAchievementsSelect<T extends boolean = true> {
   achievement?: T;
   earnedAt?: T;
   progress?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products_select".
+ */
+export interface ProductsSelect<T extends boolean = true> {
+  tenant?: T;
+  name?: T;
+  description?: T;
+  type?: T;
+  price?: T;
+  currency?: T;
+  recurringInterval?: T;
+  stripeProductId?: T;
+  stripePriceId?: T;
+  features?:
+    | T
+    | {
+        feature?: T;
+        id?: T;
+      };
+  accessLevel?: T;
+  relatedPrograms?: T;
+  relatedVideos?: T;
+  active?: T;
+  featured?: T;
+  image?: T;
+  stripeID?: T;
+  skipSync?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "subscriptions_select".
+ */
+export interface SubscriptionsSelect<T extends boolean = true> {
+  tenant?: T;
+  user?: T;
+  product?: T;
+  stripeSubscriptionId?: T;
+  stripeCustomerId?: T;
+  status?: T;
+  currentPeriodStart?: T;
+  currentPeriodEnd?: T;
+  cancelAtPeriodEnd?: T;
+  canceledAt?: T;
+  trialStart?: T;
+  trialEnd?: T;
+  metadata?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "transactions_select".
+ */
+export interface TransactionsSelect<T extends boolean = true> {
+  tenant?: T;
+  user?: T;
+  product?: T;
+  stripePaymentIntentId?: T;
+  stripeChargeId?: T;
+  stripeCustomerId?: T;
+  amount?: T;
+  currency?: T;
+  status?: T;
+  type?: T;
+  description?: T;
+  receiptUrl?: T;
+  refundAmount?: T;
+  refundReason?: T;
+  metadata?: T;
+  subscription?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "customers_select".
+ */
+export interface CustomersSelect<T extends boolean = true> {
+  tenant?: T;
+  user?: T;
+  stripeCustomerId?: T;
+  email?: T;
+  name?: T;
+  phone?: T;
+  address?:
+    | T
+    | {
+        line1?: T;
+        line2?: T;
+        city?: T;
+        state?: T;
+        postalCode?: T;
+        country?: T;
+      };
+  defaultPaymentMethod?: T;
+  balance?: T;
+  currency?: T;
+  metadata?: T;
+  stripeID?: T;
+  skipSync?: T;
   updatedAt?: T;
   createdAt?: T;
 }

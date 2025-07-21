@@ -28,8 +28,15 @@ import { VideoProgress } from './collections/VideoProgress'
 import { Comments } from './collections/Comments'
 import { Achievements } from './collections/Achievements'
 import { UserAchievements } from './collections/UserAchievements'
+// Stripe Collections
+import { Products } from './collections/Products'
+import { Subscriptions } from './collections/Subscriptions'
+import { Transactions } from './collections/Transactions'
+import { Customers } from './collections/Customers'
 // Forms collection is provided by the FormBuilder plugin
 import { multiTenantPlugin } from '@payloadcms/plugin-multi-tenant'
+import { stripePlugin } from '@payloadcms/plugin-stripe'
+import { tenantStripeEndpoints } from './endpoints/stripe/tenantStripeEndpoints'
 import { isSuperAdmin } from './access/isSuperAdmin'
 import type { Config } from './payload-types'
 import { getUserTenantIDs } from './utilities/getUserTenantIDs'
@@ -39,6 +46,9 @@ const dirname = path.dirname(filename)
 
 // eslint-disable-next-line no-restricted-exports
 export default buildConfig({
+  endpoints: [
+    ...tenantStripeEndpoints,
+  ],
   admin: {
     components: {
       // Adding BeforeDashboard component for admin UI
@@ -121,6 +131,11 @@ export default buildConfig({
     Comments,
     Achievements,
     UserAchievements,
+    // Stripe Collections
+    Products,
+    Subscriptions,
+    Transactions,
+    Customers,
   ],
   db: mongooseAdapter({
     url: process.env.DATABASE_URI as string,
@@ -160,6 +175,52 @@ export default buildConfig({
   },
   plugins: [
     ...plugins,
+    stripePlugin({
+      stripeSecretKey: process.env.STRIPE_SECRET_KEY!,
+      isTestKey: Boolean(process.env.STRIPE_SECRET_KEY?.includes('sk_test')),
+      stripeWebhooksEndpointSecret: process.env.STRIPE_WEBHOOK_ENDPOINT_SECRET,
+      rest: false,
+      sync: [
+        {
+          collection: 'products',
+          stripeResourceType: 'products',
+          stripeResourceTypeSingular: 'product',
+          fields: [
+            {
+              fieldPath: 'name',
+              stripeProperty: 'name',
+            },
+            {
+              fieldPath: 'description',
+              stripeProperty: 'description',
+            },
+            {
+              fieldPath: 'stripeProductId',
+              stripeProperty: 'id',
+            },
+          ],
+        },
+        {
+          collection: 'customers',
+          stripeResourceType: 'customers',
+          stripeResourceTypeSingular: 'customer',
+          fields: [
+            {
+              fieldPath: 'email',
+              stripeProperty: 'email',
+            },
+            {
+              fieldPath: 'name',
+              stripeProperty: 'name',
+            },
+            {
+              fieldPath: 'stripeCustomerId',
+              stripeProperty: 'id',
+            },
+          ],
+        },
+      ],
+    }),
     multiTenantPlugin<Config>({
       collections: {
         pages: {
@@ -214,6 +275,19 @@ export default buildConfig({
         '_branding_': {
           // Set as a global collection (one branding per tenant)
           isGlobal: true,
+        },
+        // Stripe Collections
+        products: {
+          // Standard collection - each tenant has their own products
+        },
+        subscriptions: {
+          // Standard collection - each tenant has their own subscriptions
+        },
+        transactions: {
+          // Standard collection - each tenant has their own transactions
+        },
+        customers: {
+          // Standard collection - each tenant has their own customers
         },
       },
       // Debug mode disabled to prevent duplicate tenant fields in admin UI

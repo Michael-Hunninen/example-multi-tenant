@@ -36,7 +36,7 @@ importers:
         specifier: ^3.47.0
         version: 3.47.0(@types/react@19.0.1)(monaco-editor@0.52.2)(next@15.4.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(sass@1.77.4))(payload@3.47.0(graphql@16.11.0)(typescript@5.5.2))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.5.2)
       '@payloadcms/plugin-stripe':
-        specifier: ^3.47.0
+        specifier: 3.47.0
         version: 3.47.0(@types/react@19.0.1)(monaco-editor@0.52.2)(next@15.4.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(sass@1.77.4))(payload@3.47.0(graphql@16.11.0)(typescript@5.5.2))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.5.2)
       '@payloadcms/richtext-lexical':
         specifier: 3.47.0
