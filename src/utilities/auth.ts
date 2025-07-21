@@ -41,21 +41,35 @@ export async function loginUser(email: string, password: string): Promise<LMSUse
     console.log('AUTH UTIL DEBUG - Validating access for hostname:', hostname)
     
     // Check if user is super-admin (can access all tenants)
+    console.log('AUTH UTIL DEBUG - User roles for super-admin check:', userData.roles)
     const isSuperAdmin = userData.roles && userData.roles.includes('super-admin')
     console.log('AUTH UTIL DEBUG - User is super-admin:', isSuperAdmin)
+    console.log('AUTH UTIL DEBUG - Super-admin check details:', {
+      hasRoles: !!userData.roles,
+      rolesArray: userData.roles,
+      includesSuperAdmin: userData.roles?.includes('super-admin'),
+      rolesType: typeof userData.roles
+    })
     
     if (isSuperAdmin) {
-      // Super-admins can access any tenant - get tenant info but don't restrict access
-      const domainResponse = await fetch(`/api/domain-info?domain=${encodeURIComponent(hostname)}`)
+      // Super-admins can access any tenant - try to get tenant info but don't fail if unavailable
       let tenantId: string | undefined
       let tenantRoles: string[] = ['super-admin'] // Super-admin role in tenant context
       
-      if (domainResponse.ok) {
-        const domainData = await domainResponse.json()
-        tenantId = domainData.tenant?.id
+      try {
+        const domainResponse = await fetch(`/api/domain-info?domain=${encodeURIComponent(hostname)}`)
+        if (domainResponse.ok) {
+          const domainData = await domainResponse.json()
+          tenantId = domainData.tenant?.id
+          console.log('AUTH UTIL DEBUG - Super-admin got tenant info:', tenantId)
+        } else {
+          console.log('AUTH UTIL DEBUG - Super-admin could not get tenant info, but proceeding anyway')
+        }
+      } catch (error) {
+        console.log('AUTH UTIL DEBUG - Super-admin domain-info fetch failed, but proceeding anyway:', error)
       }
       
-      console.log('AUTH UTIL DEBUG - Super-admin access granted for tenant:', tenantId)
+      console.log('AUTH UTIL DEBUG - Super-admin access granted for tenant:', tenantId || 'unknown')
       
       // Format the user data for super-admin
       const lmsUser: LMSUser = {
@@ -246,19 +260,30 @@ export async function getCurrentUser(): Promise<LMSUser | null> {
     console.log('AUTH UTIL DEBUG - getCurrentUser hostname:', hostname)
     
     // Get domain info to determine current tenant
-    const domainResponse = await fetch(`/api/domain-info?domain=${encodeURIComponent(hostname)}`)
-    if (!domainResponse.ok) {
-      console.log('AUTH UTIL DEBUG - Failed to get domain info in getCurrentUser')
-      return null
+    let currentTenant: any = null
+    try {
+      const domainResponse = await fetch(`/api/domain-info?domain=${encodeURIComponent(hostname)}`)
+      if (domainResponse.ok) {
+        const domainData = await domainResponse.json()
+        currentTenant = domainData.tenant
+        console.log('AUTH UTIL DEBUG - getCurrentUser current tenant:', currentTenant?.id, currentTenant?.name)
+      } else {
+        console.log('AUTH UTIL DEBUG - Failed to get domain info in getCurrentUser, status:', domainResponse.status)
+      }
+    } catch (error) {
+      console.log('AUTH UTIL DEBUG - Domain info fetch error in getCurrentUser:', error)
     }
     
-    const domainData = await domainResponse.json()
-    const currentTenant = domainData.tenant
-    console.log('AUTH UTIL DEBUG - getCurrentUser current tenant:', currentTenant?.id, currentTenant?.name)
-    
     // Check if user is super-admin (bypass tenant validation)
+    console.log('AUTH UTIL DEBUG - getCurrentUser user roles:', userData.roles)
     const isSuperAdmin = userData.roles?.includes('super-admin')
     console.log('AUTH UTIL DEBUG - getCurrentUser user is super-admin:', isSuperAdmin)
+    console.log('AUTH UTIL DEBUG - getCurrentUser super-admin check details:', {
+      hasRoles: !!userData.roles,
+      rolesArray: userData.roles,
+      includesSuperAdmin: userData.roles?.includes('super-admin'),
+      rolesType: typeof userData.roles
+    })
     
     if (isSuperAdmin) {
       // Super-admin can access any tenant
@@ -275,6 +300,11 @@ export async function getCurrentUser(): Promise<LMSUser | null> {
     }
     
     // For regular users, validate tenant access
+    if (!currentTenant) {
+      console.log('AUTH UTIL DEBUG - getCurrentUser: No tenant info available for regular user - cannot validate access')
+      return null
+    }
+    
     if (!userData.tenants || !Array.isArray(userData.tenants)) {
       console.log('AUTH UTIL DEBUG - getCurrentUser: No tenants array found')
       return null
