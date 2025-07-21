@@ -6,9 +6,11 @@ export type LMSUser = {
   email: string
   roles: string[]
   name?: string
+  tenantId?: string // Current tenant context
+  tenantRoles?: string[] // Roles within current tenant
 }
 
-// Function to log in a user via Payload's API
+// Function to log in a user via Payload's API with tenant access validation
 export async function loginUser(email: string, password: string): Promise<LMSUser | null> {
   try {
     const response = await fetch('/api/users/login', {
@@ -34,15 +36,138 @@ export async function loginUser(email: string, password: string): Promise<LMSUse
       return null
     }
     
-    // Format the user data to match our LMS user structure
+    // STRICT tenant access validation - user must have explicit access to current tenant
+    const hostname = typeof window !== 'undefined' ? window.location.hostname : 'localhost:3000'
+    console.log('AUTH UTIL DEBUG - Validating access for hostname:', hostname)
+    
+    // Check if user is super-admin (can access all tenants)
+    const isSuperAdmin = userData.roles && userData.roles.includes('super-admin')
+    console.log('AUTH UTIL DEBUG - User is super-admin:', isSuperAdmin)
+    
+    if (isSuperAdmin) {
+      // Super-admins can access any tenant - get tenant info but don't restrict access
+      const domainResponse = await fetch(`/api/domain-info?domain=${encodeURIComponent(hostname)}`)
+      let tenantId: string | undefined
+      let tenantRoles: string[] = ['super-admin'] // Super-admin role in tenant context
+      
+      if (domainResponse.ok) {
+        const domainData = await domainResponse.json()
+        tenantId = domainData.tenant?.id
+      }
+      
+      console.log('AUTH UTIL DEBUG - Super-admin access granted for tenant:', tenantId)
+      
+      // Format the user data for super-admin
+      const lmsUser: LMSUser = {
+        id: userData.id,
+        email: userData.email,
+        roles: userData.roles || [],
+        name: userData.username || email.split('@')[0],
+        tenantId: tenantId,
+        tenantRoles: tenantRoles
+      }
+      
+      console.log('AUTH UTIL DEBUG - Super-admin login successful:', lmsUser)
+      return lmsUser
+    }
+    
+    // For non-super-admin users, enforce strict tenant access
+    const domainResponse = await fetch(`/api/domain-info?domain=${encodeURIComponent(hostname)}`)
+    
+    if (!domainResponse.ok) {
+      console.log('AUTH UTIL DEBUG - Failed to get domain info - login denied')
+      return null
+    }
+    
+    const domainData = await domainResponse.json()
+    const currentTenant = domainData.tenant
+    
+    if (!currentTenant) {
+      console.log('AUTH UTIL DEBUG - No tenant found for domain - login denied')
+      return null
+    }
+    
+    console.log('AUTH UTIL DEBUG - Current tenant:', currentTenant.id, currentTenant.name)
+    console.log('AUTH UTIL DEBUG - User tenants (raw):', JSON.stringify(userData.tenants, null, 2))
+    console.log('AUTH UTIL DEBUG - User tenants length:', userData.tenants?.length)
+    console.log('AUTH UTIL DEBUG - User tenants array check:', Array.isArray(userData.tenants))
+    
+    // Check if user has explicit access to this specific tenant
+    console.log('AUTH UTIL DEBUG - Starting tenant access check...')
+    
+    let hasAccess = false
+    
+    if (!userData.tenants) {
+      console.log('AUTH UTIL DEBUG - No tenants array found on user')
+      hasAccess = false
+    } else if (!Array.isArray(userData.tenants)) {
+      console.log('AUTH UTIL DEBUG - Tenants is not an array:', typeof userData.tenants)
+      hasAccess = false
+    } else {
+      console.log('AUTH UTIL DEBUG - Found tenants array with', userData.tenants.length, 'items')
+      
+      hasAccess = userData.tenants.some((t: any, index: number) => {
+        console.log(`AUTH UTIL DEBUG - Checking tenant ${index}:`, JSON.stringify(t, null, 2))
+        
+        const tenantId = typeof t.tenant === 'string' ? t.tenant : t.tenant?.id
+        const matches = tenantId === currentTenant.id
+        
+        console.log('AUTH UTIL DEBUG - Tenant comparison:', {
+          index,
+          tenantAssociation: t,
+          extractedTenantId: tenantId,
+          currentTenantId: currentTenant.id,
+          tenantIdType: typeof tenantId,
+          currentTenantIdType: typeof currentTenant.id,
+          strictEqual: tenantId === currentTenant.id,
+          looseEqual: tenantId == currentTenant.id,
+          matches
+        })
+        
+        return matches
+      })
+    }
+    
+    console.log('AUTH UTIL DEBUG - Final access result:', hasAccess)
+    
+    if (!hasAccess) {
+      console.log('AUTH UTIL DEBUG - User does not have access to current tenant - login denied')
+      console.log('AUTH UTIL DEBUG - User must create account for this tenant')
+      console.log('AUTH UTIL DEBUG - Summary:', {
+        userEmail: userData.email,
+        currentTenantId: currentTenant.id,
+        currentTenantName: currentTenant.name,
+        userTenantCount: userData.tenants?.length || 0,
+        userTenants: userData.tenants?.map((t: any) => ({
+          tenantId: typeof t.tenant === 'string' ? t.tenant : t.tenant?.id,
+          roles: t.roles
+        }))
+      })
+      return null
+    }
+    
+    // Get user's roles within the current tenant
+    const tenantAssociation = userData.tenants?.find((t: any) => {
+      const tenantId = typeof t.tenant === 'string' ? t.tenant : t.tenant?.id
+      return tenantId === currentTenant.id
+    })
+    
+    const tenantRoles = tenantAssociation?.roles || []
+    const tenantId = currentTenant.id
+    
+    console.log('AUTH UTIL DEBUG - Tenant access granted:', { tenantId, tenantRoles })
+    
+    // Format the user data to match our enhanced LMS user structure
     const lmsUser: LMSUser = {
       id: userData.id,
       email: userData.email,
-      roles: userData.roles || [], // Ensure roles is always an array
-      name: userData.username || email.split('@')[0], // Use username if available or fallback to email prefix
+      roles: userData.roles || [], // Global roles
+      name: userData.username || email.split('@')[0],
+      tenantId: tenantId,
+      tenantRoles: tenantRoles
     }
     
-    console.log('AUTH UTIL DEBUG - Formatted login user:', lmsUser)
+    console.log('AUTH UTIL DEBUG - Regular user login successful with tenant context:', lmsUser)
     
     return lmsUser
   } catch (error) {
@@ -51,92 +176,33 @@ export async function loginUser(email: string, password: string): Promise<LMSUse
   }
 }
 
-// Function to register a new user via Payload's API
+// Function to register a new user via API (client-safe)
 export async function registerUser(
   email: string, 
   password: string, 
   name?: string
 ): Promise<boolean> {
   try {
-    console.log('AUTH UTIL DEBUG - Starting registration for:', email)
+    console.log('AUTH UTIL DEBUG - Starting client-safe tenant-aware registration for:', email)
     
-    // Extract tenant from current hostname for tenant-specific registration
-    let tenantSlug = null
-    if (typeof window !== 'undefined') {
-      const hostname = window.location.hostname
-      console.log('AUTH UTIL DEBUG - Registration hostname:', hostname)
-      
-      // Handle both production domains and localhost subdomains
-      if (hostname !== 'localhost') {
-        const parts = hostname.split('.')
-        if (parts.length > 1) {
-          // For localhost subdomains like 'location1.localhost', take the first part
-          // For production domains like 'tenant.example.com', also take the first part
-          tenantSlug = parts[0]
-        }
-      }
-      
-      // For development, you might also want to extract from path or other means
-      // if not using subdomain approach
-    }
-    
-    console.log('AUTH UTIL DEBUG - Registration tenant slug:', tenantSlug)
-    
-    // First, we need to get the tenant ID if we have a tenant slug
-    let tenantId = null
-    if (tenantSlug) {
-      try {
-        // Query the tenants collection to get the tenant ID by slug
-        const tenantResponse = await fetch(`/api/tenants?where[slug][equals]=${tenantSlug}&limit=1`)
-        if (tenantResponse.ok) {
-          const tenantData = await tenantResponse.json()
-          if (tenantData.docs && tenantData.docs.length > 0) {
-            tenantId = tenantData.docs[0].id
-            console.log('AUTH UTIL DEBUG - Found tenant ID:', tenantId)
-          }
-        }
-      } catch (error) {
-        console.error('AUTH UTIL DEBUG - Error fetching tenant:', error)
-      }
-    }
-    
-    const userData = {
-      email,
-      password,
-      username: name,
-      roles: ['regular'], // Default role for new users
-      // Add tenant relationship if we have a tenant ID
-      ...(tenantId && {
-        tenants: [{
-          tenant: tenantId,
-          roles: ['tenant-viewer'] // Use tenant-specific role
-        }]
-      })
-    }
-    
-    console.log('AUTH UTIL DEBUG - Registration payload:', userData)
-
-    const response = await fetch('/api/users', {
+    // Use the enhanced tenant-aware registration API endpoint
+    const response = await fetch('/api/users/register-with-tenant', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(userData),
+      body: JSON.stringify({ email, password, name }),
     })
     
-    console.log('AUTH UTIL DEBUG - Registration response status:', response.status)
-    console.log('AUTH UTIL DEBUG - Registration response ok:', response.ok)
-
-    if (!response.ok) {
-      const errorData = await response.text()
-      console.error('AUTH UTIL DEBUG - Registration error response:', errorData)
-      throw new Error(`Registration failed: ${response.status} - ${errorData}`)
+    if (response.ok) {
+      const result = await response.json()
+      console.log('AUTH UTIL DEBUG - Registration successful:', result)
+      return true
+    } else {
+      const errorData = await response.json()
+      console.log('AUTH UTIL DEBUG - Registration failed:', errorData)
+      return false
     }
-    
-    const responseData = await response.json()
-    console.log('AUTH UTIL DEBUG - Registration success response:', responseData)
-
-    return true
   } catch (error) {
     console.error('AUTH UTIL DEBUG - Registration error:', error)
     return false
@@ -175,15 +241,77 @@ export async function getCurrentUser(): Promise<LMSUser | null> {
       return null
     }
     
-    // Format the user data to match our LMS user structure
+    // Check if user has tenant access (similar to login validation)
+    const hostname = window.location.hostname
+    console.log('AUTH UTIL DEBUG - getCurrentUser hostname:', hostname)
+    
+    // Get domain info to determine current tenant
+    const domainResponse = await fetch(`/api/domain-info?domain=${encodeURIComponent(hostname)}`)
+    if (!domainResponse.ok) {
+      console.log('AUTH UTIL DEBUG - Failed to get domain info in getCurrentUser')
+      return null
+    }
+    
+    const domainData = await domainResponse.json()
+    const currentTenant = domainData.tenant
+    console.log('AUTH UTIL DEBUG - getCurrentUser current tenant:', currentTenant?.id, currentTenant?.name)
+    
+    // Check if user is super-admin (bypass tenant validation)
+    const isSuperAdmin = userData.roles?.includes('super-admin')
+    console.log('AUTH UTIL DEBUG - getCurrentUser user is super-admin:', isSuperAdmin)
+    
+    if (isSuperAdmin) {
+      // Super-admin can access any tenant
+      const lmsUser: LMSUser = {
+        id: userData.id,
+        email: userData.email,
+        roles: userData.roles || [],
+        name: userData.username || userData.email?.split('@')[0],
+        tenantId: currentTenant?.id,
+        tenantRoles: ['super-admin'],
+      }
+      console.log('AUTH UTIL DEBUG - Super-admin getCurrentUser result:', lmsUser)
+      return lmsUser
+    }
+    
+    // For regular users, validate tenant access
+    if (!userData.tenants || !Array.isArray(userData.tenants)) {
+      console.log('AUTH UTIL DEBUG - getCurrentUser: No tenants array found')
+      return null
+    }
+    
+    // Find matching tenant association
+    let userTenantRoles: string[] = []
+    let hasAccess = false
+    
+    for (const tenantAssoc of userData.tenants) {
+      const tenantId = typeof tenantAssoc.tenant === 'string' ? tenantAssoc.tenant : tenantAssoc.tenant?.id
+      console.log('AUTH UTIL DEBUG - getCurrentUser checking tenant:', tenantId, 'vs current:', currentTenant?.id)
+      
+      if (tenantId === currentTenant?.id) {
+        hasAccess = true
+        userTenantRoles = tenantAssoc.roles || []
+        console.log('AUTH UTIL DEBUG - getCurrentUser: Found matching tenant with roles:', userTenantRoles)
+        break
+      }
+    }
+    
+    if (!hasAccess) {
+      console.log('AUTH UTIL DEBUG - getCurrentUser: User does not have access to current tenant')
+      return null
+    }
+    
+    // Format the user data with tenant context
     const lmsUser: LMSUser = {
       id: userData.id,
       email: userData.email,
-      roles: userData.roles || [], // Ensure roles is always an array
-      name: userData.username || userData.email?.split('@')[0], // Use username if available or fallback to email prefix
+      roles: userData.roles || [],
+      name: userData.username || userData.email?.split('@')[0],
+      tenantId: currentTenant?.id,
+      tenantRoles: userTenantRoles,
     }
     
-    console.log('AUTH UTIL DEBUG - Formatted LMS user:', lmsUser)
+    console.log('AUTH UTIL DEBUG - getCurrentUser final result:', lmsUser)
     return lmsUser
   } catch (error) {
     console.error('AUTH UTIL DEBUG - Get current user error:', error)

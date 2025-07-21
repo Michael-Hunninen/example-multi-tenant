@@ -21,6 +21,7 @@ import { cn } from "@/utilities/cn"
 import { AuthGuard, useAuth, AuthProvider } from '@/components/LMSAuth/AuthWrapper'
 import { useBranding } from '@/hooks/useBranding'
 import GenericDashboardLayout from '../_components/GenericDashboardLayout'
+import TenantAccessGuard from '../_components/TenantAccessGuard'
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -447,7 +448,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <AuthProvider>
       <AuthGuard>
-        <DashboardContent>{children}</DashboardContent>
+        <TenantAccessGuard>
+          <DashboardContent>{children}</DashboardContent>
+        </TenantAccessGuard>
       </AuthGuard>
     </AuthProvider>
   )

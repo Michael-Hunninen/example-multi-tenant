@@ -1,5 +1,3 @@
-import { revalidatePath } from 'next/cache'
-
 type AfterChangeArgs = {
   doc: Record<string, any>;
   req: {
@@ -13,8 +11,13 @@ type AfterChangeArgs = {
 
 export const revalidateHeader = async ({ doc, req }: AfterChangeArgs) => {
   try {
-    // Revalidate all pages since header is used globally within a tenant
-    revalidatePath('/', 'layout')
+    // Only revalidate on server-side (not during client-side bundling)
+    if (typeof window === 'undefined') {
+      // Dynamic import to avoid bundling issues
+      const { revalidatePath } = await import('next/cache')
+      // Revalidate all pages since header is used globally within a tenant
+      revalidatePath('/', 'layout')
+    }
   } catch (err: unknown) {
     req.payload.logger.error(`Error revalidating header: ${err}`)
   }

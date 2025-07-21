@@ -5,12 +5,15 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/components/LMSAuth/AuthWrapper'
 import { Button } from '@/components/ui/button'
+import CreateTenantAccount from './CreateTenantAccount'
 
 export default function GenericLogin() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [showCreateTenantAccount, setShowCreateTenantAccount] = useState(false)
+  const [userEmailForTenantAccount, setUserEmailForTenantAccount] = useState('')
   
   const { login, user, isAuthenticated, isLoading: authLoading } = useAuth()
   const router = useRouter()
@@ -65,6 +68,25 @@ export default function GenericLogin() {
           router.push('/dashboard')
         }
       } else {
+        // Check if this might be a tenant access issue
+        // We'll show a more helpful error and potentially the create account flow
+        try {
+          // Check if user exists but doesn't have tenant access
+          const userCheckResponse = await fetch(`/api/users?where[email][equals]=${encodeURIComponent(email)}&limit=1`)
+          if (userCheckResponse.ok) {
+            const userData = await userCheckResponse.json()
+            if (userData.docs && userData.docs.length > 0) {
+              // User exists, might be a tenant access issue
+              setUserEmailForTenantAccount(email)
+              setShowCreateTenantAccount(true)
+              setError('')
+              return
+            }
+          }
+        } catch (checkError) {
+          console.error('Error checking user existence:', checkError)
+        }
+        
         setError('Invalid email or password')
       }
     } catch (err) {
@@ -73,6 +95,31 @@ export default function GenericLogin() {
     } finally {
       setIsLoading(false)
     }
+  }
+  
+  // If we're showing the create tenant account flow, render that instead
+  if (showCreateTenantAccount) {
+    return (
+      <CreateTenantAccount 
+        email={userEmailForTenantAccount}
+        onSuccess={() => {
+          // Redirect to dashboard after successful account creation
+          const redirectUrl = sessionStorage.getItem('redirectAfterLogin')
+          if (redirectUrl) {
+            sessionStorage.removeItem('redirectAfterLogin')
+            router.push(redirectUrl)
+          } else {
+            router.push('/dashboard')
+          }
+        }}
+        onCancel={() => {
+          setShowCreateTenantAccount(false)
+          setUserEmailForTenantAccount('')
+          setEmail('')
+          setPassword('')
+        }}
+      />
+    )
   }
 
   return (

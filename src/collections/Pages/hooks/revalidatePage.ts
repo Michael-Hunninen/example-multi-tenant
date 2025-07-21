@@ -1,40 +1,58 @@
 import type { CollectionAfterChangeHook, CollectionAfterDeleteHook } from 'payload'
 
-import { revalidatePath, revalidateTag } from 'next/cache'
-
-export const revalidatePage: CollectionAfterChangeHook = ({
+export const revalidatePage: CollectionAfterChangeHook = async ({
   doc,
   previousDoc,
   req: { payload, context },
 }) => {
   if (!context?.disableRevalidate) {
-    if (doc._status === 'published') {
-      const path = doc.slug === 'home' ? '/' : `/${doc.slug}`
+    // Only revalidate on server-side (not during client-side bundling)
+    if (typeof window === 'undefined') {
+      try {
+        // Dynamic import to avoid bundling issues
+        const { revalidatePath, revalidateTag } = await import('next/cache')
+        
+        if (doc._status === 'published') {
+          const path = doc.slug === 'home' ? '/' : `/${doc.slug}`
 
-      payload.logger.info(`Revalidating page at path: ${path}`)
+          payload.logger.info(`Revalidating page at path: ${path}`)
 
-      revalidatePath(path)
-      revalidateTag('pages-sitemap')
-    }
+          revalidatePath(path)
+          revalidateTag('pages-sitemap')
+        }
 
-    // If the page was previously published, we need to revalidate the old path
-    if (previousDoc?._status === 'published' && doc._status !== 'published') {
-      const oldPath = previousDoc.slug === 'home' ? '/' : `/${previousDoc.slug}`
+        // If the page was previously published, we need to revalidate the old path
+        if (previousDoc?._status === 'published' && doc._status !== 'published') {
+          const oldPath = previousDoc.slug === 'home' ? '/' : `/${previousDoc.slug}`
 
-      payload.logger.info(`Revalidating old page at path: ${oldPath}`)
+          payload.logger.info(`Revalidating old page at path: ${oldPath}`)
 
-      revalidatePath(oldPath)
-      revalidateTag('pages-sitemap')
+          revalidatePath(oldPath)
+          revalidateTag('pages-sitemap')
+        }
+      } catch (err) {
+        payload.logger.error(`Error during page revalidation: ${err}`)
+      }
     }
   }
   return doc
 }
 
-export const revalidateDelete: CollectionAfterDeleteHook = ({ doc, req: { context } }) => {
+export const revalidateDelete: CollectionAfterDeleteHook = async ({ doc, req: { context } }) => {
   if (!context?.disableRevalidate) {
-    const path = doc?.slug === 'home' ? '/' : `/${doc?.slug}`
-    revalidatePath(path)
-    revalidateTag('pages-sitemap')
+    // Only revalidate on server-side (not during client-side bundling)
+    if (typeof window === 'undefined') {
+      try {
+        // Dynamic import to avoid bundling issues
+        const { revalidatePath, revalidateTag } = await import('next/cache')
+        
+        const path = doc?.slug === 'home' ? '/' : `/${doc?.slug}`
+        revalidatePath(path)
+        revalidateTag('pages-sitemap')
+      } catch (err) {
+        console.error(`Error during page delete revalidation: ${err}`)
+      }
+    }
   }
 
   return doc

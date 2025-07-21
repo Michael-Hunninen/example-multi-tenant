@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { AuthProvider, useAuth } from '@/components/LMSAuth/AuthWrapper'
 import { Button } from '@/components/ui/button'
 import GenericLogin from '../_components/GenericLogin'
+import CreateTenantAccount from '../_components/CreateTenantAccount'
 
 // Internal component that uses auth context
 function LoginForm() {
@@ -13,6 +14,8 @@ function LoginForm() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [showCreateTenantAccount, setShowCreateTenantAccount] = useState(false)
+  const [userEmailForTenantAccount, setUserEmailForTenantAccount] = useState('')
   const [customPagesEnabled, setCustomPagesEnabled] = useState<boolean | null>(null)
   const [layoutLoading, setLayoutLoading] = useState(true)
   
@@ -46,6 +49,14 @@ function LoginForm() {
     checkCustomPagesStatus()
   }, [])
   
+  // Redirect if already authenticated
+  React.useEffect(() => {
+    if (!authLoading && isAuthenticated && user) {
+      console.log('LOGIN DEBUG - Already authenticated, redirecting to dashboard')
+      router.push('/dashboard')
+    }
+  }, [isAuthenticated, authLoading, user, router])
+  
   // Show loading while we determine which layout to use
   if (layoutLoading) {
     return (
@@ -64,14 +75,6 @@ function LoginForm() {
   }
   
   // Otherwise, use the branded JG Performance Horses login (rest of existing code)
-  
-  // Redirect if already authenticated
-  React.useEffect(() => {
-    if (!authLoading && isAuthenticated && user) {
-      console.log('LOGIN DEBUG - Already authenticated, redirecting to dashboard')
-      router.push('/dashboard')
-    }
-  }, [isAuthenticated, authLoading, user, router])
   
   // Show loading while checking auth status
   if (authLoading) {
@@ -115,6 +118,25 @@ function LoginForm() {
           router.push('/dashboard')
         }
       } else {
+        // Check if this might be a tenant access issue
+        // We'll show a more helpful error and potentially the create account flow
+        try {
+          // Check if user exists but doesn't have tenant access
+          const userCheckResponse = await fetch(`/api/users?where[email][equals]=${encodeURIComponent(email)}&limit=1`)
+          if (userCheckResponse.ok) {
+            const userData = await userCheckResponse.json()
+            if (userData.docs && userData.docs.length > 0) {
+              // User exists, might be a tenant access issue
+              setUserEmailForTenantAccount(email)
+              setShowCreateTenantAccount(true)
+              setError('')
+              return
+            }
+          }
+        } catch (checkError) {
+          console.error('Error checking user existence:', checkError)
+        }
+        
         setError('Invalid email or password')
       }
     } catch (err) {
@@ -123,6 +145,31 @@ function LoginForm() {
     } finally {
       setIsLoading(false)
     }
+  }
+  
+  // If we're showing the create tenant account flow, render that instead
+  if (showCreateTenantAccount) {
+    return (
+      <CreateTenantAccount 
+        email={userEmailForTenantAccount}
+        onSuccess={() => {
+          // Redirect to dashboard after successful account creation
+          const redirectUrl = sessionStorage.getItem('redirectAfterLogin')
+          if (redirectUrl) {
+            sessionStorage.removeItem('redirectAfterLogin')
+            router.push(redirectUrl)
+          } else {
+            router.push('/dashboard')
+          }
+        }}
+        onCancel={() => {
+          setShowCreateTenantAccount(false)
+          setUserEmailForTenantAccount('')
+          setEmail('')
+          setPassword('')
+        }}
+      />
+    )
   }
 
   return (
