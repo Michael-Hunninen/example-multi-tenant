@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
-import config from '@/payload.config'
+import payloadConfig from '@/payload.config'
 
 export async function middleware(request: NextRequest) {
   try {
     // Get the user from the session/cookies
-    const payload = await getPayload({ config })
+    const payload = await getPayload({ config: payloadConfig })
     
     // Check if user is authenticated and has admin privileges
     const { user } = await payload.auth({ headers: request.headers })
@@ -15,9 +15,9 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
     
-    // Check if user has admin-level roles
+    // Check if user has admin-level roles (only Admin and Super-Admin)
     const isAdminUser = user.roles?.some((role: string) => 
-      ['super-admin', 'admin', 'business'].includes(role)
+      ['super-admin', 'admin'].includes(role)
     )
     
     if (!isAdminUser) {

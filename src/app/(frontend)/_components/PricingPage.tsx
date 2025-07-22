@@ -161,7 +161,7 @@ export default function PricingPage() {
                         : 'bg-gray-700 hover:bg-gray-600 text-white'
                     }`}
                   >
-                    <Link href="/contact">{plan.cta}</Link>
+                    <Link href={`/checkout?plan=${plan.name.toLowerCase()}&price=${plan.price.replace('$', '')}&interval=month`}>{plan.cta}</Link>
                   </Button>
                 </div>
 
@@ -228,7 +228,7 @@ export default function PricingPage() {
             </p>
             <div className="flex flex-wrap gap-4 justify-center">
               <Button asChild className="bg-teal-500 hover:bg-teal-600 text-black font-semibold px-8 py-4 text-lg">
-                <Link href="/contact">Start Free Trial</Link>
+                <Link href="/checkout?plan=premium&price=59&interval=month&trial=true">Start Free Trial</Link>
               </Button>
               <Button asChild variant="outline" className="border-teal-500 text-teal-400 hover:bg-teal-500 hover:text-black px-8 py-4 text-lg">
                 <Link href="/contact">Contact Us</Link>

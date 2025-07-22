@@ -183,10 +183,23 @@ The Best Preparation for Tomorrow
               <h2 className="text-4xl md:text-5xl font-light text-white mb-6">
                 Training Subscriptions
               </h2>
-              <p className="text-xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed">
-                Choose the perfect subscription plan to access our comprehensive library of on-demand training videos, 
-                live sessions, and expert guidance from professional trainers.
+              <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
+                Unlock professional reining training with our flexible subscription plans. Start your journey today with a 7-day free trial.
               </p>
+              <div className="flex items-center justify-center gap-6 text-sm text-gray-400 mb-12">
+                <div className="flex items-center gap-2">
+                  <div className="h-4 w-4 text-teal-400">✓</div>
+                  <span>7-day free trial</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="h-4 w-4 text-teal-400">✓</div>
+                  <span>Cancel anytime</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="h-4 w-4 text-teal-400">✓</div>
+                  <span>30-day money back guarantee</span>
+                </div>
+              </div>
               <div className="grid md:grid-cols-3 gap-8 mb-12">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -195,16 +208,19 @@ The Best Preparation for Tomorrow
                   viewport={{ once: true }}
                   className="bg-gray-900/80 p-8 rounded-lg border border-gray-700 hover:border-teal-500/50 transition-all duration-300"
                 >
-                  <h3 className="text-2xl font-semibold text-white mb-4">Basic Plan</h3>
-                  <p className="text-gray-400 mb-4">Access to foundational training videos and monthly technique breakdowns</p>
-                  <div className="text-3xl font-bold text-teal-400 mb-6">$49/mo</div>
-                  <ul className="text-gray-300 text-sm mb-6 space-y-2">
-                    <li>• 50+ foundational videos</li>
-                    <li>• Monthly new content</li>
-                    <li>• Basic technique guides</li>
+                  <h3 className="text-2xl font-semibold text-white mb-4">Basic</h3>
+                  <p className="text-gray-400 mb-4">Perfect for beginners starting their reining journey</p>
+                  <div className="text-3xl font-bold text-teal-400 mb-6">$29<span className="text-lg text-gray-400">/month</span></div>
+                  <ul className="text-gray-300 text-sm mb-6 space-y-2 text-left">
+                    <li>• Access to fundamental training videos</li>
+                    <li>• Basic reining patterns and techniques</li>
+                    <li>• Monthly group Q&A sessions</li>
+                    <li>• Training progress tracking</li>
+                    <li>• Mobile app access</li>
+                    <li>• Community forum access</li>
                   </ul>
-                  <Button asChild className="w-full bg-teal-500 hover:bg-teal-600 text-black">
-                    <Link href="/pricing">Get Started</Link>
+                  <Button asChild className="w-full bg-gray-700 hover:bg-gray-600 text-white">
+                    <Link href="/checkout?plan=basic&price=29&interval=month">Start Basic Plan</Link>
                   </Button>
                 </motion.div>
                 <motion.div
@@ -217,17 +233,21 @@ The Best Preparation for Tomorrow
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-teal-500 text-black px-4 py-1 rounded-full text-sm font-semibold">
                     MOST POPULAR
                   </div>
-                  <h3 className="text-2xl font-semibold text-white mb-4">Premium Plan</h3>
-                  <p className="text-gray-300 mb-4">Full library access plus live Q&A sessions and personalized feedback</p>
-                  <div className="text-3xl font-bold text-teal-400 mb-6">$99/mo</div>
-                  <ul className="text-gray-300 text-sm mb-6 space-y-2">
-                    <li>• Complete video library (200+ videos)</li>
+                  <h3 className="text-2xl font-semibold text-white mb-4">Premium</h3>
+                  <p className="text-gray-300 mb-4">Comprehensive training for serious riders</p>
+                  <div className="text-3xl font-bold text-teal-400 mb-6">$59<span className="text-lg text-gray-400">/month</span></div>
+                  <ul className="text-gray-300 text-sm mb-6 space-y-2 text-left">
+                    <li>• Everything in Basic plan</li>
+                    <li>• Advanced training techniques</li>
                     <li>• Weekly live Q&A sessions</li>
-                    <li>• Personalized feedback</li>
-                    <li>• Advanced techniques</li>
+                    <li>• Video submission reviews</li>
+                    <li>• Personalized training plans</li>
+                    <li>• Direct messaging with trainers</li>
+                    <li>• Competition preparation guides</li>
+                    <li>• Priority support</li>
                   </ul>
                   <Button asChild className="w-full bg-teal-500 hover:bg-teal-600 text-black">
-                    <Link href="/pricing">Start Premium</Link>
+                    <Link href="/checkout?plan=premium&price=59&interval=month">Start Premium Plan</Link>
                   </Button>
                 </motion.div>
                 <motion.div
@@ -237,19 +257,29 @@ The Best Preparation for Tomorrow
                   viewport={{ once: true }}
                   className="bg-gray-900/80 p-8 rounded-lg border border-gray-700 hover:border-teal-500/50 transition-all duration-300"
                 >
-                  <h3 className="text-2xl font-semibold text-white mb-4">Elite Plan</h3>
-                  <p className="text-gray-400 mb-4">One-on-one virtual coaching sessions and custom training plans</p>
-                  <div className="text-3xl font-bold text-teal-400 mb-6">$199/mo</div>
-                  <ul className="text-gray-300 text-sm mb-6 space-y-2">
-                    <li>• Everything in Premium</li>
-                    <li>• Monthly 1-on-1 coaching calls</li>
-                    <li>• Custom training plans</li>
-                    <li>• Priority support</li>
+                  <h3 className="text-2xl font-semibold text-white mb-4">Elite</h3>
+                  <p className="text-gray-400 mb-4">Professional-level training and personal coaching</p>
+                  <div className="text-3xl font-bold text-teal-400 mb-6">$99<span className="text-lg text-gray-400">/month</span></div>
+                  <ul className="text-gray-300 text-sm mb-6 space-y-2 text-left">
+                    <li>• Everything in Premium plan</li>
+                    <li>• One-on-one video coaching sessions</li>
+                    <li>• Custom training program development</li>
+                    <li>• Competition strategy planning</li>
+                    <li>• Phone consultations</li>
+                    <li>• Early access to new content</li>
+                    <li>• Exclusive masterclass sessions</li>
+                    <li>• Show preparation support</li>
                   </ul>
-                  <Button asChild className="w-full bg-teal-500 hover:bg-teal-600 text-black">
-                    <Link href="/pricing">Join Elite</Link>
+                  <Button asChild className="w-full bg-gray-700 hover:bg-gray-600 text-white">
+                    <Link href="/checkout?plan=elite&price=99&interval=month">Start Elite Plan</Link>
                   </Button>
                 </motion.div>
+              </div>
+              <div className="text-center">
+                <p className="text-gray-400 mb-4">All plans include a 7-day free trial and 30-day money-back guarantee</p>
+                <Button asChild className="bg-teal-500 hover:bg-teal-600 text-black font-semibold px-8 py-3 text-lg">
+                  <Link href="/checkout?plan=premium&price=59&interval=month&trial=true">Start Free Trial</Link>
+                </Button>
               </div>
             </motion.div>
           </div>

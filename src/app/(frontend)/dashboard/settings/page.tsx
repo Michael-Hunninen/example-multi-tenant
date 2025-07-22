@@ -81,10 +81,10 @@ export default function SettingsPage() {
         </div>
         {hasChanges && (
           <div className="flex gap-3">
-            <Button variant="outline" onClick={handleReset} className="border-gray-700 text-gray-300 hover:bg-gray-800">
+            <Button variant="outline" onClick={handleReset} className="border-teal-400 text-teal-400 hover:bg-teal-400/10 hover:text-teal-300">
               Reset Changes
             </Button>
-            <Button onClick={handleSave} className="bg-teal hover:bg-teal/80">
+            <Button onClick={handleSave} className="bg-teal-400 hover:bg-teal-500 text-white">
               Save Changes
             </Button>
           </div>

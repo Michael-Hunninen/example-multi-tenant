@@ -183,7 +183,7 @@ function ProfilePageContent() {
                 variant="outline"
                 size="sm"
                 onClick={() => setIsEditing(!isEditing)}
-                className="border-gray-700 text-gray-300 hover:bg-gray-800"
+                className="border-teal-400 text-teal-400 hover:bg-teal-400/10 hover:text-teal-300"
               >
                 <Edit className="w-4 h-4 mr-2" />
                 {isEditing ? 'Cancel' : 'Edit'}
@@ -318,7 +318,7 @@ function ProfilePageContent() {
                   >
                     {saving ? 'Saving...' : 'Save Changes'}
                   </Button>
-                  <Button variant="outline" onClick={handleCancel} className="border-gray-700 text-gray-300 hover:bg-gray-800">
+                  <Button variant="outline" onClick={handleCancel} className="border-teal-400 text-teal-400 hover:bg-teal-400/10 hover:text-teal-300">
                     Cancel
                   </Button>
                 </div>
@@ -480,15 +480,15 @@ function ProfilePageContent() {
               <CardTitle className="text-white">Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button variant="outline" className="w-full justify-start border-gray-700 text-gray-300 hover:bg-gray-800">
+              <Button variant="outline" className="w-full justify-start border-teal-400 text-teal-400 hover:bg-teal-400/10 hover:text-teal-300">
                 <User className="w-4 h-4 mr-2" />
                 Account Settings
               </Button>
-              <Button variant="outline" className="w-full justify-start border-gray-700 text-gray-300 hover:bg-gray-800">
+              <Button variant="outline" className="w-full justify-start border-teal-400 text-teal-400 hover:bg-teal-400/10 hover:text-teal-300">
                 <BookOpen className="w-4 h-4 mr-2" />
                 Learning Preferences
               </Button>
-              <Button variant="outline" className="w-full justify-start border-gray-700 text-gray-300 hover:bg-gray-800">
+              <Button variant="outline" className="w-full justify-start border-teal-400 text-teal-400 hover:bg-teal-400/10 hover:text-teal-300">
                 <Award className="w-4 h-4 mr-2" />
                 View All Achievements
               </Button>

@@ -14,6 +14,7 @@ import { CheckCircle, ArrowLeft, CreditCard, Shield, Clock, AlertCircle } from '
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useTenantStripe, createTenantPaymentIntent } from '../_hooks/useTenantStripe'
+import MockCheckout from '../_components/MockCheckout'
 
 interface Product {
   id: string
@@ -152,37 +153,88 @@ function CheckoutForm({ product, clientSecret }: CheckoutFormProps) {
   )
 }
 
-export default function CheckoutPage() {
+function CheckoutPageContent() {
   const [product, setProduct] = useState<Product | null>(null)
   const [clientSecret, setClientSecret] = useState<string>('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const searchParams = useSearchParams()
-  const productId = searchParams.get('id')
+  const planName = searchParams.get('plan')
+  const price = searchParams.get('price')
+  const interval = searchParams.get('interval') || 'month'
+  const trial = searchParams.get('trial') === 'true'
 
   // Use our tenant-specific Stripe hook instead of global initialization
   const { stripePromise, isLoading: stripeLoading, error: stripeError } = useTenantStripe()
 
   useEffect(() => {
-    if (productId) {
-      fetchProduct()
+    if (planName && price) {
+      createProductFromParams()
     } else {
-      setError('No product selected')
+      setError('Invalid subscription plan selected')
       setLoading(false)
     }
-  }, [productId])
+  }, [planName, price, interval, trial])
 
-  const fetchProduct = async () => {
+  const createProductFromParams = async () => {
     try {
       setLoading(true)
 
-      // Fetch product details
-      const productRes = await fetch(`/api/products/${productId}`)
-      if (!productRes.ok) {
-        throw new Error('Failed to load product')
+      // Create product object from URL parameters
+      const planFeatures = {
+        basic: [
+          'Access to fundamental training videos',
+          'Basic reining patterns and techniques', 
+          'Monthly group Q&A sessions',
+          'Training progress tracking',
+          'Mobile app access',
+          'Community forum access'
+        ],
+        premium: [
+          'Everything in Basic plan',
+          'Advanced training techniques',
+          'Weekly live Q&A sessions',
+          'Video submission reviews',
+          'Personalized training plans',
+          'Direct messaging with trainers',
+          'Competition preparation guides',
+          'Priority support'
+        ],
+        elite: [
+          'Everything in Premium plan',
+          'One-on-one video coaching sessions',
+          'Custom training program development',
+          'Competition strategy planning',
+          'Phone consultations',
+          'Early access to new content',
+          'Exclusive masterclass sessions',
+          'Show preparation support'
+        ]
       }
 
-      const productData = await productRes.json()
+      const planDescriptions = {
+        basic: 'Perfect for beginners starting their reining journey',
+        premium: 'Comprehensive training for serious riders',
+        elite: 'Professional-level training and personal coaching'
+      }
+
+      // Ensure planName and price are valid
+      if (!planName || !price) {
+        throw new Error('Missing required plan parameters')
+      }
+
+      const productData: Product = {
+        id: `${planName}-subscription`,
+        name: `${planName.charAt(0).toUpperCase() + planName.slice(1)} Plan`,
+        description: planDescriptions[planName as keyof typeof planDescriptions] || 'Professional reining training subscription',
+        price: parseInt(price) * 100, // Convert to cents
+        currency: 'usd',
+        type: 'subscription',
+        recurringInterval: interval as 'month' | 'year',
+        features: planFeatures[planName as keyof typeof planFeatures] || [],
+        accessLevel: planName === 'elite' ? 'vip' : planName as 'basic' | 'premium',
+      }
+
       setProduct(productData)
 
       // Create payment intent using tenant-specific endpoint
@@ -194,6 +246,8 @@ export default function CheckoutPage() {
             productId: productData.id,
             productName: productData.name,
             type: productData.type,
+            planName: planName || 'unknown',
+            trial: trial.toString(),
           },
         })
 
@@ -317,12 +371,12 @@ export default function CheckoutPage() {
                 <CardDescription>Complete your purchase securely</CardDescription>
               </CardHeader>
               <CardContent>
-                {stripeError ? (
+                {stripeError || error ? (
                   <div className="text-center py-8">
                     <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-4" />
-                    <p className="text-red-600 font-semibold">Stripe configuration error</p>
-                    <p className="text-gray-600 mt-2">{stripeError}</p>
-                    <p className="text-sm text-gray-500 mt-4">Please contact support or try again later.</p>
+                    <p className="text-red-600 font-semibold">Payment Error</p>
+                    <p className="text-gray-600 mt-2">{stripeError || error}</p>
+                    <p className="text-sm text-gray-500 mt-4">Please try again or contact support.</p>
                   </div>
                 ) : stripeLoading ? (
                   <div className="text-center py-8">
@@ -360,4 +414,34 @@ export default function CheckoutPage() {
       </div>
     </div>
   )
+}
+
+export default function CheckoutPage() {
+  const searchParams = useSearchParams()
+  const planName = searchParams.get('plan')
+  const price = searchParams.get('price')
+
+  // Check if we have the required parameters first
+  if (!planName || !price) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Invalid Checkout Link</h1>
+          <p className="text-gray-600 mb-4">The checkout link is missing required parameters.</p>
+          <Link href="/pricing" className="text-blue-600 hover:text-blue-800">Return to Pricing</Link>
+        </div>
+      </div>
+    )
+  }
+
+  // For development/demo without Stripe keys, use MockCheckout
+  // This can be controlled by environment variable or other logic
+  const usesMockCheckout = process.env.NODE_ENV === 'development' || !process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+  
+  if (usesMockCheckout) {
+    console.log('Using mock checkout for development/demo')
+    return <MockCheckout />
+  }
+
+  return <CheckoutPageContent />
 }

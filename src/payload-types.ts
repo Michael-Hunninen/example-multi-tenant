@@ -1640,6 +1640,14 @@ export interface VideoProgress {
    * When the video was first watched
    */
   firstWatchedAt?: string | null;
+  /**
+   * Whether the user has bookmarked this video
+   */
+  bookmarked?: boolean | null;
+  /**
+   * Whether the user has liked this video
+   */
+  liked?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -3130,6 +3138,8 @@ export interface VideoProgressSelect<T extends boolean = true> {
   watchTime?: T;
   lastWatchedAt?: T;
   firstWatchedAt?: T;
+  bookmarked?: T;
+  liked?: T;
   updatedAt?: T;
   createdAt?: T;
 }

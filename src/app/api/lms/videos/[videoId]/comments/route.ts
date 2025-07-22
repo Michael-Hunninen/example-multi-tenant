@@ -1,24 +1,74 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
-import config from '@/payload.config'
+import config from '@payload-config'
+import { getTenantByDomain } from '@/utilities/getTenantByDomain'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { videoId: string } }
+  { params }: { params: Promise<{ videoId: string }> }
 ) {
   try {
     const { searchParams } = new URL(request.url)
     const limit = parseInt(searchParams.get('limit') || '10')
     const page = parseInt(searchParams.get('page') || '1')
     
+    // Get tenant from domain
+    const domain = request.headers.get('host') || 'localhost:3000'
+    const tenant = await getTenantByDomain(domain)
+    
+    if (!tenant) {
+      return NextResponse.json({ error: 'Tenant not found' }, { status: 404 })
+    }
+    
     const payload = await getPayload({ config })
     
-    // Get comments for this video
+    // First verify the video belongs to this tenant
+    let video
+    const { videoId } = await params
+    try {
+      video = await payload.findByID({
+        collection: 'videos',
+        id: videoId,
+        depth: 0
+      })
+      
+      // Check if video belongs to the current tenant
+      if (video && video.tenant) {
+        const videoTenantId = typeof video.tenant === 'string' ? video.tenant : video.tenant.id
+        if (videoTenantId !== tenant.id) {
+          return NextResponse.json({ error: 'Video not found' }, { status: 404 })
+        }
+      }
+    } catch (error) {
+      // Try by slug if ID lookup fails
+      const results = await payload.find({
+        collection: 'videos',
+        where: {
+          and: [
+            { tenant: { equals: tenant.id } },
+            { slug: { equals: videoId } }
+          ]
+        },
+        limit: 1,
+        depth: 0
+      })
+      
+      if (results.docs.length === 0) {
+        return NextResponse.json({ error: 'Video not found' }, { status: 404 })
+      }
+      
+      video = results.docs[0]
+    }
+    
+    // Get comments for this video with explicit tenant filtering
     const comments = await payload.find({
       collection: 'comments',
       where: {
-        video: { equals: params.videoId },
-        approved: { equals: true } // Only show approved comments
+        and: [
+          { video: { equals: video.id } },
+          { status: { equals: 'approved' } }, // Use correct status field
+          { tenant: { equals: tenant.id } } // Explicit tenant filtering
+        ]
       },
       limit,
       page,
@@ -56,31 +106,146 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { videoId: string } }
+  { params }: { params: Promise<{ videoId: string }> }
 ) {
+  // Simple test to see if we can reach this endpoint
+  console.log('=== COMMENT POST ENDPOINT REACHED ===')
+  
   try {
+    // Test basic response first
+    const testMode = false // Set to true to test basic response
+    if (testMode) {
+      return NextResponse.json({ success: true, message: 'Test endpoint reached' })
+    }
+    
+    console.log('POST /api/lms/videos/[videoId]/comments - Starting comment submission')
     const { content, userId } = await request.json()
+    console.log('Request data:', { content: content?.substring(0, 50) + '...', userId })
     
     if (!content || !userId) {
+      console.log('Missing required fields:', { content: !!content, userId: !!userId })
       return NextResponse.json({ error: 'Content and user ID are required' }, { status: 400 })
+    }
+    
+    // Get tenant from domain
+    const domain = request.headers.get('host') || 'localhost:3000'
+    const tenant = await getTenantByDomain(domain)
+    
+    if (!tenant) {
+      return NextResponse.json({ error: 'Tenant not found' }, { status: 404 })
     }
     
     const payload = await getPayload({ config })
     
-    // Create new comment
-    const newComment = await payload.create({
-      collection: 'comments',
-      data: {
-        video: params.videoId,
-        user: userId,
-        content
+    // Set tenant context for multi-tenant operations
+    // The multi-tenant plugin requires the tenant to be set in the request context
+    const payloadWithTenant = {
+      ...payload,
+      req: {
+        tenant: tenant.id
       }
+    }
+    
+    // Verify the video belongs to this tenant
+    let video
+    const { videoId } = await params
+    console.log('Looking for video with ID:', videoId)
+    try {
+      video = await payload.findByID({
+        collection: 'videos',
+        id: videoId,
+        depth: 0
+      })
+      
+      if (video && video.tenant) {
+        const videoTenantId = typeof video.tenant === 'string' ? video.tenant : video.tenant.id
+        if (videoTenantId !== tenant.id) {
+          return NextResponse.json({ error: 'Video not found' }, { status: 404 })
+        }
+      }
+    } catch (error) {
+      // Try by slug if ID lookup fails
+      const results = await payload.find({
+        collection: 'videos',
+        where: {
+          and: [
+            { tenant: { equals: tenant.id } },
+            { slug: { equals: videoId } }
+          ]
+        },
+        limit: 1,
+        depth: 0
+      })
+      
+      if (results.docs.length === 0) {
+        return NextResponse.json({ error: 'Video not found' }, { status: 404 })
+      }
+      
+      video = results.docs[0]
+    }
+    
+    // Create new comment
+    console.log('Creating comment with data:', {
+      video: video.id,
+      user: userId,
+      content: content.substring(0, 50) + '...'
     })
     
-    return NextResponse.json({ success: true, comment: newComment })
+    // Validate user exists
+    try {
+      const userExists = await payload.findByID({
+        collection: 'users',
+        id: userId,
+        depth: 0
+      })
+      console.log('User validation:', { userId, exists: !!userExists })
+    } catch (userError) {
+      console.error('User validation failed:', userError)
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+    
+    const commentData = {
+      video: video.id,
+      user: userId,
+      content,
+      status: 'approved' as const, // Ensure comment is approved by default
+      tenant: tenant.id // Add tenant field for multi-tenant plugin
+    }
+    
+    console.log('About to create comment with payload.create:', commentData)
+    
+    const newComment = await payload.create({
+      collection: 'comments',
+      data: commentData
+    })
+    
+    console.log('Comment created successfully:', newComment.id)
+    
+    // Transform the comment for frontend response
+    const user = typeof newComment.user === 'object' && newComment.user !== null ? newComment.user : null
+    const transformedComment = {
+      id: newComment.id,
+      user: user?.email?.split('@')[0] || 'Anonymous',
+      avatar: null,
+      content: newComment.content,
+      timestamp: formatTimeAgo(newComment.createdAt),
+      likes: newComment.likes || 0,
+      createdAt: newComment.createdAt
+    }
+    
+    return NextResponse.json(transformedComment)
   } catch (error) {
     console.error('Error creating comment:', error)
-    return NextResponse.json({ error: 'Failed to create comment' }, { status: 500 })
+    
+    // Return detailed error information for debugging
+    const errorDetails = {
+      error: 'Failed to create comment',
+      details: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack?.substring(0, 500) : undefined,
+      timestamp: new Date().toISOString()
+    }
+    
+    return NextResponse.json(errorDetails, { status: 500 })
   }
 }
 

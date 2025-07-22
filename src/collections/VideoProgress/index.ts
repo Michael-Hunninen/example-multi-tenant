@@ -101,6 +101,22 @@ export const VideoProgress: CollectionConfig = {
         description: 'When the video was first watched',
       },
     },
+    {
+      name: 'bookmarked',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description: 'Whether the user has bookmarked this video',
+      },
+    },
+    {
+      name: 'liked',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description: 'Whether the user has liked this video',
+      },
+    },
   ],
   hooks: {
     beforeChange: [
