@@ -22,6 +22,7 @@ function DashboardContent() {
   const { user } = useAuth()
   const searchParams = useSearchParams()
   const [dashboardData, setDashboardData] = useState<any>(null)
+  const [permissions, setPermissions] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [showWalkthrough, setShowWalkthrough] = useState(false)
   
@@ -66,6 +67,10 @@ function DashboardContent() {
         ])
         
         setDashboardData({ dashboardStats, featuredContent, userEnrollments, userPoints, upcomingLessons, learningTime, recentVideosData })
+        
+        // Load user permissions
+        const userPermissions = await getUserPermissions(user)
+        setPermissions(userPermissions)
       } catch (error) {
         console.error('Error fetching dashboard data:', error)
       } finally {
@@ -76,7 +81,7 @@ function DashboardContent() {
     fetchDashboardData()
   }, [user?.id])
   
-  if (loading || !dashboardData) {
+  if (loading || !dashboardData || !permissions) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
@@ -109,8 +114,7 @@ function DashboardContent() {
   // Use real recent videos data with actual progress
   const recentVideos = recentVideosData?.videos?.slice(0, 3) || []
 
-  // Get user permissions
-  const permissions = getUserPermissions(user)
+  // Permissions are now loaded via state in useEffect
 
   const handleWalkthroughComplete = () => {
     setShowWalkthrough(false)

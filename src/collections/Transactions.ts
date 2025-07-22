@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { createCustomerOnTransaction } from './hooks/createCustomerOnTransaction'
 
 export const Transactions: CollectionConfig = {
   slug: 'transactions',
@@ -21,6 +22,9 @@ export const Transactions: CollectionConfig = {
     create: ({ req }) => Boolean(req.user),
     update: ({ req }) => Boolean(req.user?.roles?.includes('super-admin')),
     delete: ({ req }) => Boolean(req.user?.roles?.includes('super-admin')),
+  },
+  hooks: {
+    afterChange: [createCustomerOnTransaction],
   },
   fields: [
     {

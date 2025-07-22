@@ -10,9 +10,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Progress } from "@/components/ui/progress"
 import { useState, useEffect } from "react"
-import { User, Mail, Phone, MapPin, Calendar, Award, BookOpen, Clock, Star, Camera, Edit } from "lucide-react"
+import { User, Mail, Phone, MapPin, Calendar, Award, BookOpen, Clock, Star, Camera, Edit, BarChart3 } from "lucide-react"
 import { useAuth } from "@/components/LMSAuth/AuthWrapper"
 import { AuthGuard } from "@/components/LMSAuth/AuthWrapper"
+import { getUserPermissions } from '@/utilities/userPermissions'
+import LockedFeatureCard from '@/components/LockedFeatureCard'
+import { formatWatchTime, formatStreak } from '@/utilities/timeFormat'
 
 // Interface for profile data
 interface ProfileData {
@@ -51,6 +54,10 @@ interface ProfileData {
 function ProfilePageContent() {
   const { user: authUser } = useAuth()
   const [profileData, setProfileData] = useState<ProfileData | null>(null)
+  const [permissions, setPermissions] = useState<any>(null)
+  const [progressData, setProgressData] = useState<any>(null)
+  const [learningTimeData, setLearningTimeData] = useState<any>(null)
+  const [loginStreakData, setLoginStreakData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isEditing, setIsEditing] = useState(false)
@@ -63,28 +70,58 @@ function ProfilePageContent() {
   })
   const [saving, setSaving] = useState(false)
 
-  // Fetch profile data
+  // Fetch profile data, permissions, and progress data
   useEffect(() => {
     const fetchProfileData = async () => {
       if (!authUser?.id) return
       
       try {
         setLoading(true)
-        const response = await fetch(`/api/lms/profile?userId=${authUser.id}`)
         
-        if (!response.ok) {
+        // Fetch profile data, permissions, progress data, learning time, and login streak in parallel
+        const [profileRes, progressRes, learningTimeRes, loginStreakRes] = await Promise.all([
+          fetch(`/api/lms/profile?userId=${authUser.id}`),
+          fetch(`/api/lms/user-progress?userId=${authUser.id}`),
+          fetch(`/api/lms/user-learning-time?userId=${authUser.id}`),
+          fetch(`/api/lms/user-login-streak?userId=${authUser.id}`)
+        ])
+        
+        if (!profileRes.ok) {
           throw new Error('Failed to fetch profile data')
         }
         
-        const data = await response.json()
-        setProfileData(data)
+        const profileData = await profileRes.json()
+        setProfileData(profileData)
         setEditForm({
-          name: data.name,
-          email: data.email,
-          phone: data.phone,
-          location: data.location,
-          bio: data.bio
+          name: profileData.name,
+          email: profileData.email,
+          phone: profileData.phone,
+          location: profileData.location,
+          bio: profileData.bio
         })
+        
+        // Load user permissions
+        const userPermissions = await getUserPermissions(authUser)
+        setPermissions(userPermissions)
+        
+        // Load progress data if user has access to programs
+        if (progressRes.ok && userPermissions?.canAccessPrograms) {
+          const progressData = await progressRes.json()
+          setProgressData(progressData)
+        }
+        
+        // Load learning time data (always available)
+        if (learningTimeRes.ok) {
+          const learningTimeData = await learningTimeRes.json()
+          setLearningTimeData(learningTimeData)
+        }
+        
+        // Load login streak data (always available)
+        if (loginStreakRes.ok) {
+          const loginStreakData = await loginStreakRes.json()
+          setLoginStreakData(loginStreakData)
+        }
+        
       } catch (err) {
         console.error('Error fetching profile data:', err)
         setError('Failed to load profile data')
@@ -413,7 +450,11 @@ function ProfilePageContent() {
                   <Clock className="w-4 h-4 text-blue-400" />
                   <span className="text-gray-400">Total Watch Time</span>
                 </div>
-                <span className="text-white font-medium">{profileData.stats.totalWatchTime}h</span>
+                <span className="text-white font-medium">
+                  {learningTimeData?.formattedTime || 
+                   (profileData.stats.totalWatchTime ? `${profileData.stats.totalWatchTime}h` : '0s')
+                  }
+                </span>
               </div>
               
               <div className="flex items-center justify-between">
@@ -421,7 +462,12 @@ function ProfilePageContent() {
                   <Star className="w-4 h-4 text-orange-400" />
                   <span className="text-gray-400">Current Streak</span>
                 </div>
-                <span className="text-white font-medium">{profileData.stats.currentStreak} days</span>
+                <span className="text-white font-medium">
+                  {loginStreakData?.currentStreak !== undefined 
+                    ? formatStreak(loginStreakData.currentStreak)
+                    : formatStreak(profileData.stats.currentStreak || 0)
+                  }
+                </span>
               </div>
               
               <div className="flex items-center justify-between">
@@ -442,37 +488,84 @@ function ProfilePageContent() {
             </CardContent>
           </Card>
 
-          {/* Progress Overview */}
-          <Card className="bg-gray-900 border-gray-800">
-            <CardHeader>
-              <CardTitle className="text-white">Progress Overview</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-gray-400">Overall Progress</span>
-                  <span className="text-white font-medium">68%</span>
+          {/* Progress Overview - Access Controlled */}
+          {permissions?.canAccessPrograms ? (
+            <Card className="bg-gray-900 border-gray-800">
+              <CardHeader>
+                <CardTitle className="text-white">Progress Overview</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-gray-400">Overall Progress</span>
+                    <span className="text-white font-medium">
+                      {progressData?.overallProgress ? `${Math.round(progressData.overallProgress)}%` : '0%'}
+                    </span>
+                  </div>
+                  <Progress value={progressData?.overallProgress || 0} className="h-2" />
                 </div>
-                <Progress value={68} className="h-2" />
-              </div>
-              
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-gray-400">This Month</span>
-                  <span className="text-white font-medium">12 videos</span>
+                
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-gray-400">This Month</span>
+                    <span className="text-white font-medium">
+                      {progressData?.monthlyVideos ? `${progressData.monthlyVideos} videos` : '0 videos'}
+                    </span>
+                  </div>
+                  <Progress value={progressData?.monthlyProgress || 0} className="h-2" />
                 </div>
-                <Progress value={75} className="h-2" />
-              </div>
-              
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-gray-400">Goal Progress</span>
-                  <span className="text-white font-medium">8/10 programs</span>
+                
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-gray-400">Goal Progress</span>
+                    <span className="text-white font-medium">
+                      {progressData?.completedPrograms && progressData?.totalPrograms 
+                        ? `${progressData.completedPrograms}/${progressData.totalPrograms} programs`
+                        : '0/0 programs'
+                      }
+                    </span>
+                  </div>
+                  <Progress value={progressData?.goalProgress || 0} className="h-2" />
                 </div>
-                <Progress value={80} className="h-2" />
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ) : (
+            <LockedFeatureCard
+              title="Progress Overview"
+              description="Track your learning progress and achievements"
+              icon={<BarChart3 className="w-4 h-4" />}
+              requiredTier="Premium"
+            >
+              <CardHeader>
+                <CardTitle className="text-white">Progress Overview</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-gray-400">Overall Progress</span>
+                    <span className="text-white font-medium">68%</span>
+                  </div>
+                  <Progress value={68} className="h-2" />
+                </div>
+                
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-gray-400">This Month</span>
+                    <span className="text-white font-medium">12 videos</span>
+                  </div>
+                  <Progress value={75} className="h-2" />
+                </div>
+                
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-gray-400">Goal Progress</span>
+                    <span className="text-white font-medium">8/10 programs</span>
+                  </div>
+                  <Progress value={80} className="h-2" />
+                </div>
+              </CardContent>
+            </LockedFeatureCard>
+          )}
 
           {/* Quick Actions */}
           <Card className="bg-gray-900 border-gray-800">

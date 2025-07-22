@@ -22,7 +22,7 @@ export default function LockedFeatureCard({
   children
 }: LockedFeatureCardProps) {
   return (
-    <Card className={`relative overflow-hidden border-gray-800 group cursor-pointer ${className}`}>
+    <Card className={`relative overflow-hidden bg-gray-900 border-gray-800 group cursor-pointer ${className}`}>
       {/* Hover overlay - only visible on hover */}
       <div className="absolute inset-0 bg-gray-900/95 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
         <div className="text-center space-y-3">
@@ -40,8 +40,8 @@ export default function LockedFeatureCard({
         </div>
       </div>
 
-      {/* Normal card content - grayed out */}
-      <div className="opacity-40 grayscale">
+      {/* Normal card content - blurred */}
+      <div className="blur-sm opacity-70">
         {children ? (
           children
         ) : (

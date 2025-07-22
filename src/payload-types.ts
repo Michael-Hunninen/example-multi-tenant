@@ -1832,8 +1832,6 @@ export interface Product {
    * Product image for display
    */
   image?: (string | null) | Media;
-  stripeID?: string | null;
-  skipSync?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1853,13 +1851,13 @@ export interface Subscription {
    */
   product: string | Product;
   /**
-   * Stripe Subscription ID
+   * Stripe Subscription ID (auto-populated when Stripe is connected)
    */
-  stripeSubscriptionId: string;
+  stripeSubscriptionId?: string | null;
   /**
-   * Stripe Customer ID
+   * Stripe Customer ID (auto-populated when Stripe is connected)
    */
-  stripeCustomerId: string;
+  stripeCustomerId?: string | null;
   /**
    * Current subscription status from Stripe
    */
@@ -1990,9 +1988,9 @@ export interface Customer {
    */
   user: string | User;
   /**
-   * Stripe Customer ID
+   * Stripe Customer ID (auto-populated when Stripe is connected)
    */
-  stripeCustomerId: string;
+  stripeCustomerId?: string | null;
   /**
    * Customer email address
    */
@@ -2055,8 +2053,6 @@ export interface Customer {
     | number
     | boolean
     | null;
-  stripeID?: string | null;
-  skipSync?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -3223,8 +3219,6 @@ export interface ProductsSelect<T extends boolean = true> {
   active?: T;
   featured?: T;
   image?: T;
-  stripeID?: T;
-  skipSync?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3298,8 +3292,6 @@ export interface CustomersSelect<T extends boolean = true> {
   balance?: T;
   currency?: T;
   metadata?: T;
-  stripeID?: T;
-  skipSync?: T;
   updatedAt?: T;
   createdAt?: T;
 }

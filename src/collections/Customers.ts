@@ -36,10 +36,10 @@ export const Customers: CollectionConfig = {
     {
       name: 'stripeCustomerId',
       type: 'text',
-      required: true,
+      required: false, // Made optional for development without Stripe
       unique: true,
       admin: {
-        description: 'Stripe Customer ID',
+        description: 'Stripe Customer ID (auto-populated when Stripe is connected)',
         readOnly: true,
       },
     },

@@ -47,7 +47,8 @@ const dirname = path.dirname(filename)
 // eslint-disable-next-line no-restricted-exports
 export default buildConfig({
   endpoints: [
-    ...tenantStripeEndpoints,
+    // Only include Stripe endpoints if API keys are configured
+    ...(process.env.STRIPE_SECRET_KEY ? tenantStripeEndpoints : []),
   ],
   admin: {
     components: {
@@ -175,52 +176,55 @@ export default buildConfig({
   },
   plugins: [
     ...plugins,
-    stripePlugin({
-      stripeSecretKey: process.env.STRIPE_SECRET_KEY!,
-      isTestKey: Boolean(process.env.STRIPE_SECRET_KEY?.includes('sk_test')),
-      stripeWebhooksEndpointSecret: process.env.STRIPE_WEBHOOK_ENDPOINT_SECRET,
-      rest: false,
-      sync: [
-        {
-          collection: 'products',
-          stripeResourceType: 'products',
-          stripeResourceTypeSingular: 'product',
-          fields: [
-            {
-              fieldPath: 'name',
-              stripeProperty: 'name',
-            },
-            {
-              fieldPath: 'description',
-              stripeProperty: 'description',
-            },
-            {
-              fieldPath: 'stripeProductId',
-              stripeProperty: 'id',
-            },
-          ],
-        },
-        {
-          collection: 'customers',
-          stripeResourceType: 'customers',
-          stripeResourceTypeSingular: 'customer',
-          fields: [
-            {
-              fieldPath: 'email',
-              stripeProperty: 'email',
-            },
-            {
-              fieldPath: 'name',
-              stripeProperty: 'name',
-            },
-            {
-              fieldPath: 'stripeCustomerId',
-              stripeProperty: 'id',
-            },
-          ],
-        },
-      ],
-    }),
+    // Only include Stripe plugin if API keys are configured
+    ...(process.env.STRIPE_SECRET_KEY ? [
+      stripePlugin({
+        stripeSecretKey: process.env.STRIPE_SECRET_KEY,
+        isTestKey: Boolean(process.env.STRIPE_SECRET_KEY?.includes('sk_test')),
+        stripeWebhooksEndpointSecret: process.env.STRIPE_WEBHOOK_ENDPOINT_SECRET,
+        rest: false,
+        sync: [
+          {
+            collection: 'products',
+            stripeResourceType: 'products',
+            stripeResourceTypeSingular: 'product',
+            fields: [
+              {
+                fieldPath: 'name',
+                stripeProperty: 'name',
+              },
+              {
+                fieldPath: 'description',
+                stripeProperty: 'description',
+              },
+              {
+                fieldPath: 'stripeProductId',
+                stripeProperty: 'id',
+              },
+            ],
+          },
+          {
+            collection: 'customers',
+            stripeResourceType: 'customers',
+            stripeResourceTypeSingular: 'customer',
+            fields: [
+              {
+                fieldPath: 'email',
+                stripeProperty: 'email',
+              },
+              {
+                fieldPath: 'name',
+                stripeProperty: 'name',
+              },
+              {
+                fieldPath: 'stripeCustomerId',
+                stripeProperty: 'id',
+              },
+            ],
+          },
+        ],
+      })
+    ] : []),
     multiTenantPlugin<Config>({
       collections: {
         pages: {

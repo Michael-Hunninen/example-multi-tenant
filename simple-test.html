@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Customer Test</title>
+</head>
+<body>
+    <h1>Simple Customer Creation Test</h1>
+    <p><strong>Manual Test Steps:</strong></p>
+    <ol>
+        <li>Go to <a href="/admin" target="_blank">/admin</a></li>
+        <li>Navigate to Collections → Customers</li>
+        <li>Click "Create New"</li>
+        <li>Try to create a customer with:
+            <ul>
+                <li><strong>User:</strong> Select the user with email "mhunninen@gmail.com"</li>
+                <li><strong>Email:</strong> mhunninen@gmail.com</li>
+                <li><strong>Name:</strong> Michael</li>
+                <li><strong>Currency:</strong> usd</li>
+            </ul>
+        </li>
+        <li>See if you get the same "You must select a tenant" error</li>
+    </ol>
+    
+    <p><strong>If the manual creation works:</strong> The issue is with our API authentication</p>
+    <p><strong>If the manual creation fails:</strong> The issue is with the Customers collection configuration</p>
+    
+    <hr>
+    
+    <h2>Alternative: Test Hook Directly</h2>
+    <p>Instead of creating customers manually, let's test if the hooks work by:</p>
+    <ol>
+        <li>Go to <a href="/admin/collections/subscriptions" target="_blank">Subscriptions Collection</a></li>
+        <li>Find your existing subscription (ID: 687ffc6bd9b16aada539d367)</li>
+        <li>Edit it and change the status to "cancelled" and save</li>
+        <li>Then change it back to "active" and save</li>
+        <li>Check the server console for hook logs</li>
+        <li>Check if a customer was created in the Customers collection</li>
+    </ol>
+</body>
+</html>

@@ -1,5 +1,5 @@
 export type UserRole = 'super-admin' | 'admin' | 'business' | 'regular'
-export type UserTier = 'basic' | 'premium' | 'pro' // For regular users
+export type UserTier = 'basic' | 'premium' | 'vip' | 'enterprise' // For regular users based on product access levels
 
 export interface UserPermissions {
   canAccessAdmin: boolean
@@ -33,22 +33,49 @@ export function canAccessAdmin(user: any): boolean {
 }
 
 /**
- * Get user tier for regular users
- * This would typically come from a subscription or user profile field
- * For now, we'll use a placeholder logic
+ * Get user tier based on their active subscriptions and product access levels
+ * Returns the highest access level from all active subscriptions
  */
-export function getUserTier(user: any): UserTier | null {
+export async function getUserTier(user: any): Promise<UserTier | null> {
   if (!hasRole(user, 'regular')) return null
   
-  // TODO: Replace with actual tier logic from subscription/profile
-  // For now, assume basic tier for demo purposes
-  return user.tier || 'basic'
+  try {
+    // Fetch user's active subscriptions
+    const response = await fetch(`/api/lms/user-subscriptions?userId=${user.id}&status=active`)
+    if (!response.ok) {
+      console.warn('Failed to fetch user subscriptions, defaulting to basic tier')
+      return 'basic'
+    }
+    
+    const subscriptions = await response.json()
+    
+    if (!subscriptions.docs || subscriptions.docs.length === 0) {
+      return 'basic' // Default to basic if no active subscriptions
+    }
+    
+    // Get the highest access level from all active subscriptions
+    const accessLevels = subscriptions.docs
+      .map((sub: any) => sub.product?.accessLevel)
+      .filter(Boolean)
+      .map((level: string) => level.toLowerCase())
+    
+    // Priority order: enterprise > vip > premium > basic
+    if (accessLevels.includes('enterprise')) return 'enterprise'
+    if (accessLevels.includes('vip')) return 'vip'
+    if (accessLevels.includes('premium')) return 'premium'
+    if (accessLevels.includes('basic')) return 'basic'
+    
+    return 'basic' // Default fallback
+  } catch (error) {
+    console.error('Error fetching user tier:', error)
+    return 'basic' // Default to basic on error
+  }
 }
 
 /**
  * Get comprehensive user permissions
  */
-export function getUserPermissions(user: any): UserPermissions {
+export async function getUserPermissions(user: any): Promise<UserPermissions> {
   if (!user) {
     return {
       canAccessAdmin: false,
@@ -86,7 +113,7 @@ export function getUserPermissions(user: any): UserPermissions {
 
   // Regular users - tier-based permissions
   if (hasRole(user, 'regular')) {
-    const tier = getUserTier(user)
+    const tier = await getUserTier(user)
     
     switch (tier) {
       case 'basic':
@@ -107,14 +134,23 @@ export function getUserPermissions(user: any): UserPermissions {
           canAccessAchievements: true,
           tier: 'premium'
         }
-      case 'pro':
+      case 'vip':
         return {
           canAccessAdmin: false,
           canAccessPrograms: true,
           canAccessLiveLessons: true,
           canAccessVideos: true,
           canAccessAchievements: true,
-          tier: 'pro'
+          tier: 'vip'
+        }
+      case 'enterprise':
+        return {
+          canAccessAdmin: false,
+          canAccessPrograms: true,
+          canAccessLiveLessons: true,
+          canAccessVideos: true,
+          canAccessAchievements: true,
+          tier: 'enterprise'
         }
       default:
         return {

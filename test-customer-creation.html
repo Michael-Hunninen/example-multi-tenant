@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Customer Creation</title>
+</head>
+<body>
+    <h1>Test Customer Creation</h1>
+    <div>
+        <label>User ID:</label>
+        <input type="text" id="userId" placeholder="Enter user ID from subscription" value="687d3b5d2be29cba375fc3d8">
+        <br><br>
+        <label>Subscription ID:</label>
+        <input type="text" id="subscriptionId" placeholder="Enter subscription ID" value="687ffc6bd9b16aada539d367">
+        <br><br>
+        <label>Tenant Slug:</label>
+        <input type="text" id="tenantSlug" placeholder="Enter tenant slug" value="jgperformancehorses">
+        <br><br>
+        <button onclick="testCustomerCreation()">Test Customer Creation</button>
+    </div>
+    <div id="result" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc;"></div>
+
+    <script>
+        async function testCustomerCreation() {
+            const userId = document.getElementById('userId').value;
+            const subscriptionId = document.getElementById('subscriptionId').value;
+            const tenantSlug = document.getElementById('tenantSlug').value;
+            const resultDiv = document.getElementById('result');
+
+            if (!userId || !subscriptionId) {
+                resultDiv.innerHTML = '<p style="color: red;">Please enter both User ID and Subscription ID</p>';
+                return;
+            }
+
+            try {
+                resultDiv.innerHTML = '<p>Testing customer creation...</p>';
+                
+                const response = await fetch('/api/test-customer-creation', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        userId: userId,
+                        subscriptionId: subscriptionId,
+                        tenantSlug: tenantSlug
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultDiv.innerHTML = `
+                        <p style="color: green;"><strong>Success!</strong></p>
+                        <p>Message: ${result.message}</p>
+                        <p>Customer ID: ${result.customerId}</p>
+                        <p>Customer Email: ${result.customerEmail}</p>
+                        <p><em>Check the server console for detailed logs</em></p>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <p style="color: red;"><strong>Error:</strong></p>
+                        <p>${result.error}</p>
+                        <p><em>Check the server console for detailed error logs</em></p>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <p style="color: red;"><strong>Network Error:</strong></p>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

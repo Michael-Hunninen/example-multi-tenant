@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { createCustomerOnSubscription } from './hooks/createCustomerOnSubscription'
 
 export const Subscriptions: CollectionConfig = {
   slug: 'subscriptions',
@@ -22,6 +23,9 @@ export const Subscriptions: CollectionConfig = {
     update: ({ req }) => Boolean(req.user),
     delete: ({ req }) => Boolean(req.user?.roles?.includes('super-admin')),
   },
+  hooks: {
+    afterChange: [createCustomerOnSubscription],
+  },
   fields: [
     {
       name: 'user',
@@ -44,19 +48,19 @@ export const Subscriptions: CollectionConfig = {
     {
       name: 'stripeSubscriptionId',
       type: 'text',
-      required: true,
+      required: false, // Made optional for development without Stripe
       unique: true,
       admin: {
-        description: 'Stripe Subscription ID',
+        description: 'Stripe Subscription ID (auto-populated when Stripe is connected)',
         readOnly: true,
       },
     },
     {
       name: 'stripeCustomerId',
       type: 'text',
-      required: true,
+      required: false, // Made optional for development without Stripe
       admin: {
-        description: 'Stripe Customer ID',
+        description: 'Stripe Customer ID (auto-populated when Stripe is connected)',
         readOnly: true,
       },
     },
