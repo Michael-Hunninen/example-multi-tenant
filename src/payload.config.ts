@@ -28,6 +28,7 @@ import { VideoProgress } from './collections/VideoProgress'
 import { Comments } from './collections/Comments'
 import { Achievements } from './collections/Achievements'
 import { UserAchievements } from './collections/UserAchievements'
+import { Notifications } from './collections/Notifications'
 // Stripe Collections
 import { Products } from './collections/Products'
 import { Subscriptions } from './collections/Subscriptions'
@@ -132,6 +133,7 @@ export default buildConfig({
     Comments,
     Achievements,
     UserAchievements,
+    Notifications,
     // Stripe Collections
     Products,
     Subscriptions,
@@ -275,6 +277,9 @@ export default buildConfig({
         },
         'user-achievements': {
           // Standard collection - each tenant has their own user achievements
+        },
+        notifications: {
+          // Standard collection - each tenant has their own notifications
         },
         '_branding_': {
           // Set as a global collection (one branding per tenant)

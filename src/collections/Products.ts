@@ -53,35 +53,64 @@ export const Products: CollectionConfig = {
       defaultValue: 'one_time',
     },
     {
-      name: 'price',
-      type: 'number',
+      name: 'prices',
+      type: 'array',
       required: true,
+      minRows: 1,
       admin: {
-        description: 'Price in cents (e.g., 2999 for $29.99)',
+        description: 'Multiple pricing options for this product (e.g., monthly and annual)',
       },
-    },
-    {
-      name: 'currency',
-      type: 'select',
-      required: true,
-      options: [
-        { label: 'USD', value: 'usd' },
-        { label: 'EUR', value: 'eur' },
-        { label: 'GBP', value: 'gbp' },
-      ],
-      defaultValue: 'usd',
-    },
-    {
-      name: 'recurringInterval',
-      type: 'select',
-      admin: {
-        condition: (data) => data.type === 'subscription',
-        description: 'Billing interval for subscriptions',
-      },
-      options: [
-        { label: 'Monthly', value: 'month' },
-        { label: 'Yearly', value: 'year' },
-        { label: 'Weekly', value: 'week' },
+      fields: [
+        {
+          name: 'amount',
+          type: 'number',
+          required: true,
+          admin: {
+            description: 'Price in cents (e.g., 2999 for $29.99)',
+          },
+        },
+        {
+          name: 'currency',
+          type: 'select',
+          required: true,
+          options: [
+            { label: 'USD', value: 'usd' },
+            { label: 'EUR', value: 'eur' },
+            { label: 'GBP', value: 'gbp' },
+          ],
+          defaultValue: 'usd',
+        },
+        {
+          name: 'interval',
+          type: 'select',
+          admin: {
+            condition: (data, siblingData) => {
+              // Access the parent document's type field
+              return data.type === 'subscription'
+            },
+            description: 'Billing interval for subscriptions',
+          },
+          options: [
+            { label: 'Monthly', value: 'month' },
+            { label: 'Yearly', value: 'year' },
+            { label: 'Weekly', value: 'week' },
+          ],
+        },
+        {
+          name: 'stripePriceId',
+          type: 'text',
+          admin: {
+            description: 'Stripe Price ID for this specific price option',
+            readOnly: true,
+          },
+        },
+        {
+          name: 'label',
+          type: 'text',
+          admin: {
+            description: 'Display label for this price (e.g., "Monthly", "Annual")',
+          },
+        },
       ],
     },
     {
@@ -89,14 +118,6 @@ export const Products: CollectionConfig = {
       type: 'text',
       admin: {
         description: 'Stripe Product ID (auto-populated)',
-        readOnly: true,
-      },
-    },
-    {
-      name: 'stripePriceId',
-      type: 'text',
-      admin: {
-        description: 'Stripe Price ID (auto-populated)',
         readOnly: true,
       },
     },

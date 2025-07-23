@@ -84,6 +84,7 @@ export interface Config {
     comments: Comment;
     achievements: Achievement;
     'user-achievements': UserAchievement;
+    notifications: Notification;
     products: Product;
     subscriptions: Subscription;
     transactions: Transaction;
@@ -115,6 +116,7 @@ export interface Config {
     comments: CommentsSelect<false> | CommentsSelect<true>;
     achievements: AchievementsSelect<false> | AchievementsSelect<true>;
     'user-achievements': UserAchievementsSelect<false> | UserAchievementsSelect<true>;
+    notifications: NotificationsSelect<false> | NotificationsSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
     subscriptions: SubscriptionsSelect<false> | SubscriptionsSelect<true>;
     transactions: TransactionsSelect<false> | TransactionsSelect<true>;
@@ -1768,6 +1770,37 @@ export interface UserAchievement {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notifications".
+ */
+export interface Notification {
+  id: string;
+  tenant?: (string | null) | Tenant;
+  user: string | User;
+  title: string;
+  message: string;
+  type: 'achievement' | 'comment' | 'progress' | 'enrollment' | 'live_session' | 'system';
+  read?: boolean | null;
+  /**
+   * URL to navigate to when notification is clicked
+   */
+  actionUrl?: string | null;
+  /**
+   * Additional data for the notification (video ID, program ID, etc.)
+   */
+  metadata?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "products".
  */
 export interface Product {
@@ -1783,22 +1816,32 @@ export interface Product {
   description?: string | null;
   type: 'one_time' | 'subscription' | 'course_access' | 'program_bundle';
   /**
-   * Price in cents (e.g., 2999 for $29.99)
+   * Multiple pricing options for this product (e.g., monthly and annual)
    */
-  price: number;
-  currency: 'usd' | 'eur' | 'gbp';
-  /**
-   * Billing interval for subscriptions
-   */
-  recurringInterval?: ('month' | 'year' | 'week') | null;
+  prices: {
+    /**
+     * Price in cents (e.g., 2999 for $29.99)
+     */
+    amount: number;
+    currency: 'usd' | 'eur' | 'gbp';
+    /**
+     * Billing interval for subscriptions
+     */
+    interval?: ('month' | 'year' | 'week') | null;
+    /**
+     * Stripe Price ID for this specific price option
+     */
+    stripePriceId?: string | null;
+    /**
+     * Display label for this price (e.g., "Monthly", "Annual")
+     */
+    label?: string | null;
+    id?: string | null;
+  }[];
   /**
    * Stripe Product ID (auto-populated)
    */
   stripeProductId?: string | null;
-  /**
-   * Stripe Price ID (auto-populated)
-   */
-  stripePriceId?: string | null;
   /**
    * List of product features
    */
@@ -2262,6 +2305,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'user-achievements';
         value: string | UserAchievement;
+      } | null)
+    | ({
+        relationTo: 'notifications';
+        value: string | Notification;
       } | null)
     | ({
         relationTo: 'products';
@@ -3195,6 +3242,22 @@ export interface UserAchievementsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notifications_select".
+ */
+export interface NotificationsSelect<T extends boolean = true> {
+  tenant?: T;
+  user?: T;
+  title?: T;
+  message?: T;
+  type?: T;
+  read?: T;
+  actionUrl?: T;
+  metadata?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "products_select".
  */
 export interface ProductsSelect<T extends boolean = true> {
@@ -3202,11 +3265,17 @@ export interface ProductsSelect<T extends boolean = true> {
   name?: T;
   description?: T;
   type?: T;
-  price?: T;
-  currency?: T;
-  recurringInterval?: T;
+  prices?:
+    | T
+    | {
+        amount?: T;
+        currency?: T;
+        interval?: T;
+        stripePriceId?: T;
+        label?: T;
+        id?: T;
+      };
   stripeProductId?: T;
-  stripePriceId?: T;
   features?:
     | T
     | {

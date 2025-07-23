@@ -11,6 +11,8 @@ import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { useState } from "react"
 import { Bell, Shield, User, Monitor, Volume2, Mail, Smartphone, Globe, Eye, Lock, CreditCard, Download, Trash2 } from "lucide-react"
+import { useAuth } from '@/components/LMSAuth/AuthWrapper'
+import BillingManagement from '@/components/BillingManagement'
 
 // Mock settings data - replace with actual API calls
 const mockSettings = {
@@ -46,6 +48,7 @@ const mockSettings = {
 }
 
 export default function SettingsPage() {
+  const { user } = useAuth()
   const [settings, setSettings] = useState(mockSettings)
   const [hasChanges, setHasChanges] = useState(false)
 
@@ -541,96 +544,15 @@ export default function SettingsPage() {
 
         {/* Billing Tab */}
         <TabsContent value="billing" className="mt-6">
-          <div className="grid gap-6">
+          {user?.id ? (
+            <BillingManagement userId={user.id} />
+          ) : (
             <Card className="bg-gray-900 border-gray-800">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <CreditCard className="w-5 h-5 text-teal" />
-                  Subscription
-                </CardTitle>
-                <CardDescription className="text-gray-400">
-                  Manage your subscription and billing information
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-teal/10 border border-teal/20 rounded-lg">
-                  <div>
-                    <h3 className="font-semibold text-white">Premium Plan</h3>
-                    <p className="text-sm text-gray-400">Access to all programs and features</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-lg font-bold text-teal">$29.99/month</p>
-                    <Badge className="bg-teal text-white">Active</Badge>
-                  </div>
-                </div>
-                
-                <div className="flex gap-3">
-                  <Button variant="outline" className="border-gray-700 text-gray-300 hover:bg-gray-800">
-                    Change Plan
-                  </Button>
-                  <Button variant="outline" className="border-red-700 text-red-400 hover:bg-red-900/20">
-                    Cancel Subscription
-                  </Button>
-                </div>
+              <CardContent className="p-6 text-center">
+                <p className="text-gray-400">Please log in to view billing information</p>
               </CardContent>
             </Card>
-
-            <Card className="bg-gray-900 border-gray-800">
-              <CardHeader>
-                <CardTitle className="text-white">Payment Method</CardTitle>
-                <CardDescription className="text-gray-400">
-                  Your current payment method
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-gray-800 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-6 bg-blue-600 rounded flex items-center justify-center text-white text-xs font-bold">
-                      VISA
-                    </div>
-                    <div>
-                      <p className="text-white">•••• •••• •••• 4242</p>
-                      <p className="text-sm text-gray-400">Expires 12/25</p>
-                    </div>
-                  </div>
-                  <Button variant="outline" size="sm" className="border-gray-700 text-gray-300 hover:bg-gray-800">
-                    Update
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gray-900 border-gray-800">
-              <CardHeader>
-                <CardTitle className="text-white">Billing History</CardTitle>
-                <CardDescription className="text-gray-400">
-                  Your recent billing history
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {[
-                    { date: "Dec 1, 2024", amount: "$29.99", status: "Paid" },
-                    { date: "Nov 1, 2024", amount: "$29.99", status: "Paid" },
-                    { date: "Oct 1, 2024", amount: "$29.99", status: "Paid" }
-                  ].map((invoice, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
-                      <div>
-                        <p className="text-white">{invoice.date}</p>
-                        <p className="text-sm text-gray-400">Premium Plan</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-white">{invoice.amount}</p>
-                        <Badge variant="secondary" className="bg-green-900/20 text-green-400">
-                          {invoice.status}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>
