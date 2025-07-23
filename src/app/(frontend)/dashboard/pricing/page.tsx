@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { motion } from 'framer-motion'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -78,13 +79,13 @@ const mockProducts: Product[] = [
     featured: false,
     prices: [
       {
-        amount: 2900, // $29.00
+        amount: 29, // $29.00
         currency: 'usd',
         interval: 'month',
         label: 'Monthly'
       },
       {
-        amount: 27900, // $279.00 (save ~20%)
+        amount: 290, // $290.00 (10 months price for 12 months)
         currency: 'usd',
         interval: 'year',
         label: 'Annual'
@@ -109,13 +110,13 @@ const mockProducts: Product[] = [
     featured: true,
     prices: [
       {
-        amount: 5900, // $59.00
+        amount: 49, // $49.00
         currency: 'usd',
         interval: 'month',
         label: 'Monthly'
       },
       {
-        amount: 56900, // $569.00 (save ~20%)
+        amount: 490, // $490.00 (10 months price for 12 months)
         currency: 'usd',
         interval: 'year',
         label: 'Annual'
@@ -141,13 +142,13 @@ const mockProducts: Product[] = [
     featured: false,
     prices: [
       {
-        amount: 9900, // $99.00
+        amount: 99, // $99.00
         currency: 'usd',
         interval: 'month',
         label: 'Monthly'
       },
       {
-        amount: 95900, // $959.00 (save ~20%)
+        amount: 990, // $990.00 (10 months price for 12 months)
         currency: 'usd',
         interval: 'year',
         label: 'Annual'
@@ -158,199 +159,124 @@ const mockProducts: Product[] = [
 
 function ProductCard({ product, billingPeriod }: { product: Product, billingPeriod: 'annual' | 'monthly' }) {
   const Icon = AccessLevelIcons[product.accessLevel] || Users // Fallback to Users icon
-  const colorClass = AccessLevelColors[product.accessLevel] || AccessLevelColors.basic // Fallback to basic styling
-
-  // Find the appropriate price based on billing period
-  const currentPrice = product.prices?.find(price => {
-    // Use both interval and label to identify annual/monthly prices
-    const interval = price.interval || '';
-    const label = price.label || '';
-    
-    if (billingPeriod === 'annual') {
-      return interval === 'year' || 
-             interval.includes('year') || 
-             interval.includes('annual') ||
-             label.toLowerCase().includes('annual') || 
-             label.toLowerCase().includes('yearly');
-    } else {
-      return interval === 'month' || 
-             interval.includes('month') ||
-             label.toLowerCase().includes('monthly');
-    }
-  }) || product.prices?.[0] // Fallback to first price if no match
   
-  // Ensure prices array exists
+  // Convert dashboard product structure to match Services page structure
+  const tier = {
+    name: product.name,
+    description: product.description,
+    features: product.features,
+    popular: product.featured,
+    icon: Icon,
+    color: {
+      basic: "from-gray-500 to-gray-600",
+      premium: "from-teal-500 to-teal-600", 
+      vip: "from-yellow-500 to-yellow-600",
+      enterprise: "from-purple-500 to-purple-600"
+    }[product.accessLevel] || "from-gray-500 to-gray-600",
+    prices: (() => {
+      // Find monthly and annual prices once to avoid redundant searches
+      const monthlyPrice = product.prices?.find(p => 
+        p.interval === 'month' || p.label?.toLowerCase().includes('monthly')
+      )
+      const annualPrice = product.prices?.find(p => 
+        p.interval === 'year' || p.label?.toLowerCase().includes('annual')
+      )
+      
+      const monthlyAmount = monthlyPrice?.amount || 29
+      const annualAmount = annualPrice?.amount || (monthlyAmount * 10) // 10 months for 12 months pricing
+      
+      return {
+        monthly: { 
+          amount: monthlyAmount,
+          display: `$${monthlyAmount}`
+        },
+        annual: { 
+          amount: annualAmount,
+          display: `$${(annualAmount / 12).toFixed(2)}`, // Monthly equivalent
+          fullPrice: `$${annualAmount}`
+        }
+      }
+    })()
+  }
+  
   if (!product.prices || product.prices.length === 0) {
-    console.error('No prices found for product:', product.name)
-    return null // Don't render products without prices
+    return null
   }
 
-  // Ensure we have a valid price
-  if (!currentPrice || typeof currentPrice.amount !== 'number' || currentPrice.amount <= 0) {
-    // Try to find any price in the product that has a valid amount
-    const anyPrice = product.prices.find(p => 
-      p && typeof p.amount === 'number' && p.amount > 0
-    )
-    
-    if (!anyPrice) {
-      console.error('No valid price found for product:', product.name)
-      return null // Don't render the card if no valid price
-    }
-    
-    // Use the alternative price
-    const altDisplayPrice = anyPrice.amount
-    console.log('Using alternative price for', product.name, ':', altDisplayPrice)
-    
-    // Return a card with the alternative price
-    return (
-      <Card className={`relative transition-all duration-200 hover:shadow-xl bg-gray-900 border-gray-800 ${product.featured ? 'ring-2 ring-teal-500 scale-105' : ''}`}>
-        <CardHeader className="pb-2">
-          <div className="text-center">
-            <CardTitle className="text-xl text-white mb-2">{product.name}</CardTitle>
-            <CardDescription className="text-gray-400">{product.description}</CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="text-center">
-            <div className="flex items-baseline justify-center">
-              <span className="text-3xl font-bold text-white">${altDisplayPrice.toFixed(0)}</span>
-              <span className="text-gray-400 ml-1">/mo</span>
-            </div>
-            {(anyPrice.interval?.includes('year') || anyPrice.label?.toLowerCase().includes('annual') || anyPrice.label?.toLowerCase().includes('yearly')) && (
-              <>
-                <div className="text-sm text-teal-500 font-medium">get 2 months free</div>
-                <div className="text-xs text-gray-400 mt-1">
-                  ${anyPrice.amount.toFixed(0)} billed annually
-                </div>
-              </>
-            )}
-          </div>
-          
-          {/* What's Included */}
-          <div>
-            <h3 className="text-sm font-semibold text-white mb-3">What's Included</h3>
-            <ul className="space-y-2">
-              {product.features?.map((feature, i) => (
-                <li key={i} className="flex items-center">
-                  <Check className="h-4 w-4 text-teal-500 mr-2" />
-                  <span className="text-gray-300">{feature}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </CardContent>
-        <CardFooter>
-          <Button className="w-full bg-teal-600 hover:bg-teal-700 text-white" asChild>
-            <Link href={`/dashboard/checkout?product=${product.id}&price=${anyPrice.stripePriceId || anyPrice.interval || 'monthly'}`}>Get Started</Link>
-          </Button>
-        </CardFooter>
-      </Card>
-    )
-  }
-
-  // We have a valid price, calculate display price
-  // For annual, show monthly equivalent (yearly price ÷ 12)
-  const interval = currentPrice.interval || '';
-  const label = currentPrice.label || '';
+  const IconComponent = tier.icon
   
-  // Check both interval and label for annual pricing
-  const isYearly = interval === 'year' || 
-                  interval.includes('year') || 
-                  interval.includes('annual') ||
-                  label.toLowerCase().includes('annual') || 
-                  label.toLowerCase().includes('yearly');
-                  
-  const displayPrice = isYearly
-    ? Math.round(currentPrice.amount / 12) 
-    : currentPrice.amount
-    
-  // Ensure displayPrice is a valid number
-  const safeDisplayPrice = displayPrice > 0 ? displayPrice : currentPrice.amount
-  
-  console.log(
-    'Price for', product.name, 
-    'Period:', billingPeriod, 
-    'Amount:', currentPrice.amount,
-    'Display:', safeDisplayPrice,
-    'Final:', (safeDisplayPrice / 100).toFixed(0)
-  )
-
   return (
-    <Card className={`relative transition-all duration-200 hover:shadow-xl bg-gray-900 border-gray-800 ${
-      product.featured ? 'ring-2 ring-teal-500 scale-105' : ''
-    }`}>
-      {product.featured && (
-        <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-          <Badge className="bg-teal-500 text-black px-3 py-1 font-semibold">
-            <Star className="w-3 h-3 mr-1" />
+    <motion.div
+      initial={{ opacity: 0, y: 50 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      viewport={{ once: true }}
+      className={`relative group ${
+        tier.popular 
+          ? 'transform scale-105 lg:scale-110' 
+          : 'hover:transform hover:scale-105'
+      } transition-all duration-500`}
+    >
+      {tier.popular && (
+        <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-20">
+          <Badge className="bg-gradient-to-r from-teal-500 to-teal-600 text-black font-semibold px-4 py-1">
             Most Popular
           </Badge>
         </div>
       )}
       
-      <CardHeader className="pb-2">
-        <div className="text-center">
-          <CardTitle className="text-xl text-white">{product.name}</CardTitle>
-          <CardDescription className="text-gray-400">{product.description}</CardDescription>
-        </div>
-      </CardHeader>
-      
-      <CardContent className="space-y-6">
-        <div className="text-center">
-          <div className="flex items-baseline justify-center">
-            <span className="text-3xl font-bold text-white">
-              ${safeDisplayPrice.toFixed(0)}
-            </span>
-            <span className="text-gray-400 ml-1">/mo</span>
-          </div>
-          {billingPeriod === 'annual' && isYearly && (
-            <div className="text-sm text-teal-500 font-medium">get 2 months free</div>
-          )}
-          {billingPeriod === 'annual' && isYearly && (
-            <div className="text-xs text-gray-400 mt-1">
-              ${currentPrice.amount.toFixed(0)} billed annually
-            </div>
-          )}
-          {billingPeriod === 'annual' && !isYearly && (
-            <div className="text-sm text-gray-400">${currentPrice.amount.toFixed(0)} billed annually</div>
-          )}
-        </div>
+      <div className={`relative bg-gradient-to-br from-gray-900/90 to-gray-800/50 rounded-2xl p-8 border-2 ${
+        tier.popular 
+          ? 'border-teal-500/50 shadow-2xl shadow-teal-500/20' 
+          : 'border-gray-800/50 hover:border-teal-500/30'
+      } transition-all duration-500 backdrop-blur-sm h-full flex flex-col`}>
+        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
         
-        {/* What's Included */}
-        <div>
-          <h3 className="text-sm font-semibold text-white mb-3">What's Included</h3>
-          <ul className="space-y-3">
-            {product.features.map((feature, index) => (
-              <li key={index} className="flex items-start">
-                <CheckCircle className="w-4 h-4 text-teal-400 mr-3 mt-0.5 flex-shrink-0" />
-                <span className="text-sm text-gray-300">{feature}</span>
+        <div className="relative z-10 flex-1">
+          <div className="text-center mb-8">
+            <div className={`w-16 h-16 bg-gradient-to-br ${tier.color} rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg`}>
+              <IconComponent className="h-8 w-8 text-white" />
+            </div>
+            <h3 className="text-2xl font-bold text-white mb-2">{tier.name}</h3>
+            <div className="flex items-baseline justify-center gap-1 mb-2">
+              <span className="text-4xl font-bold text-teal-400">{tier.prices[billingPeriod].display}</span>
+              <span className="text-gray-400">/mo</span>
+            </div>
+            {billingPeriod === 'annual' && (
+              <div className="text-sm text-teal-500 font-medium mb-1">get 2 months free</div>
+            )}
+            {billingPeriod === 'annual' && (
+              <div className="text-xs text-gray-400 mb-2">
+                {tier.prices.annual.fullPrice} billed annually
+              </div>
+            )}
+            <p className="text-gray-300 text-sm leading-relaxed">{tier.description}</p>
+          </div>
+          
+          {/* What's Included - exactly like Services page */}
+          <ul className="space-y-3 mb-8 flex-1">
+            {tier.features.map((feature, featureIndex) => (
+              <li key={featureIndex} className="flex items-start gap-3 text-gray-300">
+                <CheckCircle className="h-4 w-4 text-teal-400 flex-shrink-0 mt-0.5" />
+                <span className="text-sm leading-relaxed">{feature}</span>
               </li>
             ))}
           </ul>
         </div>
         
-        <Button
-          onClick={() => {
-            // Navigate to checkout with product ID and price ID
-            window.location.href = `/dashboard/checkout?product=${product.id}&price=${currentPrice.stripePriceId || currentPrice.interval || 'monthly'}`
-          }}
-          className={`w-full ${
-            product.featured 
-              ? 'bg-teal-500 hover:bg-teal-600 text-black' 
-              : 'bg-gray-700 hover:bg-gray-600 text-white'
+        <Link 
+          href={`/dashboard/checkout?product=${product.id}&price=${tier.prices[billingPeriod].amount}&billing=${billingPeriod}`}
+          className={`inline-flex items-center justify-center gap-2 w-full mt-auto px-4 py-3 rounded-md font-medium transition-all duration-300 relative z-20 ${
+            tier.popular
+              ? 'bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-black font-semibold shadow-lg'
+              : 'bg-gray-800 hover:bg-gray-700 text-white border border-gray-700 hover:border-teal-500/50'
           }`}
-          size="lg"
         >
           Get Started
-          <ArrowRight className="w-4 h-4 ml-2" />
-        </Button>
-
-        <div className="flex items-center justify-center text-xs text-gray-400">
-          <Shield className="w-3 h-3 mr-1" />
-          30-day money-back guarantee
-        </div>
-      </CardContent>
-    </Card>
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+      </div>
+    </motion.div>
   )
 }
 
@@ -487,7 +413,7 @@ export default function PricingPage() {
               {/* Billing Period Info */}
               <div className="text-center mb-8">
                 <p className="text-gray-400">
-                  Save 20% with annual billing - prices shown as monthly equivalent
+                  Get 2 months free with annual billing - prices shown as monthly equivalent
                 </p>
               </div>
               
@@ -581,32 +507,7 @@ export default function PricingPage() {
 
         </Tabs>
 
-        {/* Feature comparison */}
-        <div className="mt-16">
-          <h2 className="text-2xl font-bold text-center mb-8 text-white">What's Included</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="text-center p-6 bg-gray-900 rounded-lg border border-gray-800">
-              <Video className="w-8 h-8 text-teal-400 mx-auto mb-4" />
-              <h3 className="font-semibold mb-2 text-white">Video Library</h3>
-              <p className="text-sm text-gray-400">Access to comprehensive video content</p>
-            </div>
-            <div className="text-center p-6 bg-gray-900 rounded-lg border border-gray-800">
-              <BookOpen className="w-8 h-8 text-teal-400 mx-auto mb-4" />
-              <h3 className="font-semibold mb-2 text-white">Programs</h3>
-              <p className="text-sm text-gray-400">Structured learning programs</p>
-            </div>
-            <div className="text-center p-6 bg-gray-900 rounded-lg border border-gray-800">
-              <Trophy className="w-8 h-8 text-teal-400 mx-auto mb-4" />
-              <h3 className="font-semibold mb-2 text-white">Achievements</h3>
-              <p className="text-sm text-gray-400">Track your progress and earn badges</p>
-            </div>
-            <div className="text-center p-6 bg-gray-900 rounded-lg border border-gray-800">
-              <MessageCircle className="w-8 h-8 text-teal-400 mx-auto mb-4" />
-              <h3 className="font-semibold mb-2 text-white">Community</h3>
-              <p className="text-sm text-gray-400">Connect with other learners</p>
-            </div>
-          </div>
-        </div>
+
 
         {/* Trust indicators */}
         <div className="mt-16 text-center">

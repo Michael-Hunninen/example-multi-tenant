@@ -42,6 +42,16 @@ export const Media: CollectionConfig = {
     staticDir: path.resolve(dirname, '../../public/media'),
     adminThumbnail: 'thumbnail',
     focalPoint: true,
+    // Add file size limit (10MB)
+    filesRequiredOnCreate: false,
+    mimeTypes: [
+      // Images
+      'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 
+      // Videos
+      'video/mp4', 'video/webm', 'video/ogg', 'video/quicktime', 'video/x-msvideo',
+      // Documents
+      'application/pdf'
+    ],
     imageSizes: [
       {
         name: 'thumbnail',

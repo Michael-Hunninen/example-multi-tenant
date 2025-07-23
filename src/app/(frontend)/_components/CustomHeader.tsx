@@ -150,12 +150,27 @@ export default function CustomHeader() {
                   {/* Elegant Header */}
                   <div className="px-4 sm:px-6 md:px-8 py-4 sm:py-6 border-b border-gray-700/50">
                     <div className="flex items-center space-x-3 sm:space-x-4">
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-teal-400 to-teal-600 rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg">
-                        <span className="text-black font-bold text-base sm:text-lg">R</span>
-                      </div>
+                      {!loading && branding?.logo?.url ? (
+                        <div className="relative w-10 h-10 sm:w-12 sm:h-12 overflow-hidden">
+                          <Image
+                            src={branding.logo.url}
+                            alt={branding.name || 'Logo'}
+                            width={branding.logo.width || 48}
+                            height={branding.logo.height || 48}
+                            className="w-full h-full object-contain"
+                            priority
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
+                          <span className="text-white font-bold text-base sm:text-lg">
+                            {branding?.name?.[0] || 'J'}
+                          </span>
+                        </div>
+                      )}
                       <div>
                         <h2 className="text-white font-semibold text-lg sm:text-xl tracking-wide">Navigation</h2>
-                        <p className="text-gray-400 text-xs sm:text-sm">Reining Academy</p>
+                        <p className="text-gray-400 text-xs sm:text-sm">JG Performance Horses</p>
                       </div>
                     </div>
                   </div>

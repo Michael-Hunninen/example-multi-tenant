@@ -114,11 +114,72 @@ export default function CheckoutPage() {
     fetchProduct()
   }, [productId, priceId])
 
-  const handleCheckout = () => {
-    // Mock checkout process - you can integrate with Stripe here
-    console.log('Starting checkout for:', { product, selectedPrice })
-    // For now, just show a success message
-    alert(`Checkout initiated for ${product?.name} - ${selectedPrice?.label}`)
+  const handleCheckout = async () => {
+    if (!product || !selectedPrice) return
+    
+    try {
+      setLoading(true)
+      
+      // Check if we have a Stripe price ID
+      if (!selectedPrice.stripePriceId) {
+        alert('This product is not configured for Stripe checkout. Please contact support.')
+        return
+      }
+      
+      // Create checkout session using tenant-aware Stripe endpoint
+      const response = await fetch('/api/stripe/create-tenant-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          priceId: selectedPrice.stripePriceId,
+          mode: selectedPrice.interval ? 'subscription' : 'payment',
+          successUrl: `${window.location.origin}/dashboard/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+          cancelUrl: `${window.location.origin}/dashboard/checkout/cancelled`,
+          metadata: {
+            productId: product.id,
+            productName: product.name,
+            priceLabel: selectedPrice.label,
+          },
+        }),
+      })
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Failed to create checkout session')
+      }
+      
+      const { sessionId } = await response.json()
+      
+      // Get Stripe publishable key for this tenant
+      const keyResponse = await fetch('/api/stripe/tenant-publishable-key')
+      if (!keyResponse.ok) {
+        throw new Error('Failed to get Stripe configuration')
+      }
+      
+      const { publishableKey } = await keyResponse.json()
+      
+      // Dynamically import Stripe
+      const { loadStripe } = await import('@stripe/stripe-js')
+      const stripe = await loadStripe(publishableKey)
+      
+      if (!stripe) {
+        throw new Error('Failed to load Stripe')
+      }
+      
+      // Redirect to Stripe Checkout
+      const { error } = await stripe.redirectToCheckout({ sessionId })
+      
+      if (error) {
+        throw new Error(error.message)
+      }
+    } catch (error) {
+      console.error('Checkout error:', error)
+      alert(`Checkout failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
+      setLoading(false)
+    }
   }
 
   if (loading) {

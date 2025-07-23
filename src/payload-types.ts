@@ -1875,6 +1875,8 @@ export interface Product {
    * Product image for display
    */
   image?: (string | null) | Media;
+  stripeID?: string | null;
+  skipSync?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2096,6 +2098,8 @@ export interface Customer {
     | number
     | boolean
     | null;
+  stripeID?: string | null;
+  skipSync?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -3288,6 +3292,8 @@ export interface ProductsSelect<T extends boolean = true> {
   active?: T;
   featured?: T;
   image?: T;
+  stripeID?: T;
+  skipSync?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3361,6 +3367,8 @@ export interface CustomersSelect<T extends boolean = true> {
   balance?: T;
   currency?: T;
   metadata?: T;
+  stripeID?: T;
+  skipSync?: T;
   updatedAt?: T;
   createdAt?: T;
 }
