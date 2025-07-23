@@ -21,6 +21,7 @@ import { getTenantByDomain } from '@/utilities/getTenantByDomain'
 import { isCustomPagesEnabled } from '@/utilities/getDomainInfo'
 import './globals.css'
 import { getServerSideURL } from '@/utilities/getURL'
+import PWAMetadata from '@/components/PWAMetadata'
 
 
 
@@ -67,6 +68,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <InitTheme />
         <link href="/favicon.ico" rel="icon" sizes="32x32" />
         <link href="/favicon.svg" rel="icon" type="image/svg+xml" />
+        <PWAMetadata 
+          tenantName={tenant?.name || undefined}
+          tenantDescription={tenant?.description || undefined}
+          themeColor="#14b8a6"
+        />
       </head>
       <body>
         <Providers>

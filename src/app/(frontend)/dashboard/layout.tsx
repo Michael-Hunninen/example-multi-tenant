@@ -24,6 +24,8 @@ import { AuthGuard, useAuth, AuthProvider } from '@/components/LMSAuth/AuthWrapp
 import { useBranding } from '@/hooks/useBranding'
 import GenericDashboardLayout from '../_components/GenericDashboardLayout'
 import TenantAccessGuard from '../_components/TenantAccessGuard'
+import PWAMetadata from '@/components/PWAMetadata'
+import Head from 'next/head'
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -106,6 +108,11 @@ function DashboardContent({ children }: DashboardContentProps) {
 
   return (
     <div className="min-h-screen bg-gray-950 overflow-x-hidden">
+      <PWAMetadata 
+        tenantName={branding?.name || undefined}
+        tenantDescription={undefined}
+        themeColor="#14b8a6"
+      />
       {/* Desktop Sidebar */}
       <div className={cn(
         "hidden md:flex flex-col bg-gray-900/95 backdrop-blur-sm border-r border-gray-800/50 fixed top-0 left-0 bottom-0 z-10 transition-all duration-300 ease-in-out",
