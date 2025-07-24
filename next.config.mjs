@@ -6,7 +6,7 @@ import './next.config.env.mjs'
 
 const NEXT_PUBLIC_SERVER_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL
   ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-  : undefined || process.env.__NEXT_PRIVATE_ORIGIN || 'http://localhost:3000'
+  : undefined || process.env.__NEXT_PRIVATE_ORIGIN || 'https://clubsolve.netlify.com'
 
 // Detect if running locally (Windows) or in Netlify (Linux)
 const isLocalBuild = process.platform === 'win32';
@@ -18,6 +18,8 @@ const nextConfig = {
   output: isLocalBuild ? undefined : 'standalone',
   // Tenant routing is handled by middleware instead of rewrites
   // Add configurations from website template
+  // Force the generation of static pages for custom routes
+  trailingSlash: false, // Recommended for Netlify deployments
   images: {
     remotePatterns: [
       ...[NEXT_PUBLIC_SERVER_URL].map((item) => {

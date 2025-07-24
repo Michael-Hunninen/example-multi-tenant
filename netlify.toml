@@ -1,6 +1,7 @@
 [build]
   publish = ".next"
   command = "node netlify-build.js && pnpm install --no-frozen-lockfile && NEXT_PHASE=phase-production-build pnpm build"
+  ignore_command = "false"
 
 [build.environment]
   NODE_VERSION = "18"
