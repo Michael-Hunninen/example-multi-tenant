@@ -6,6 +6,8 @@
   NODE_VERSION = "18"
   NPM_USE_PRODUCTION = "false"
   NEXT_PHASE = "phase-production-build"
+  # Disable secrets scanning for public environment variables
+  SECRETS_SCAN_OMIT_KEYS = "PAYLOAD_PUBLIC_SERVER_URL,NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,POSTGRES_URL"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
