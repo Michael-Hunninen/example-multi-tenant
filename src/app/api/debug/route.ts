@@ -5,10 +5,26 @@ import { headers } from 'next/headers'
 import { getTenantByDomain } from '@/utilities/getTenantByDomain'
 
 export async function GET() {
-  const headersList = headers()
+  const headersList = await headers()
   const host = headersList.get('host') || 'unknown'
   
-  const debug = {
+  const debug: {
+    timestamp: string;
+    environment: string | undefined;
+    host: string;
+    serverUrl: string | undefined;
+    tenant: {
+      id: string;
+      slug: string;
+      name: string;
+    } | null;
+    pages: {
+      count: number;
+      hasHomePage: boolean;
+    } | null;
+    database: string;
+    error: string | null;
+  } = {
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV,
     host,
@@ -26,11 +42,13 @@ export async function GET() {
     
     // Try to get tenant
     const tenant = await getTenantByDomain(host)
-    debug.tenant = tenant ? {
-      id: tenant.id,
-      slug: tenant.slug,
-      name: tenant.name
-    } : null
+    if (tenant) {
+      debug.tenant = {
+        id: tenant.id,
+        slug: tenant.slug,
+        name: tenant.name
+      }
+    }
     
     // Check if any pages exist
     const pageResult = await payload.find({
@@ -39,13 +57,14 @@ export async function GET() {
       pagination: false
     })
     
+    // Initialize pages object
     debug.pages = {
       count: pageResult.totalDocs,
       hasHomePage: false
     }
     
     // Check for home page
-    if (tenant) {
+    if (tenant && debug.pages) {
       const homePageResult = await payload.find({
         collection: 'pages',
         limit: 1,
@@ -69,7 +88,11 @@ export async function GET() {
     }
     
   } catch (error) {
-    debug.error = error.message
+    if (error instanceof Error) {
+      debug.error = error.message
+    } else {
+      debug.error = 'Unknown error occurred'
+    }
   }
   
   return NextResponse.json(debug)
