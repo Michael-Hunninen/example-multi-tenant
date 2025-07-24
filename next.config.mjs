@@ -13,13 +13,15 @@ const isLocalBuild = process.platform === 'win32';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Only use standalone output in production (Netlify) environment
-  // This avoids Windows symlink permission errors during local builds
-  output: isLocalBuild ? undefined : 'standalone',
+  // Only use standalone output for deployments that need it (e.g. Netlify)
+  // Vercel handles Next.js natively, so no need for standalone output there
+  // This also avoids Windows symlink permission errors during local builds
+  output: process.env.VERCEL ? undefined : isLocalBuild ? undefined : 'standalone',
   // Tenant routing is handled by middleware instead of rewrites
   // Add configurations from website template
-  // Force the generation of static pages for custom routes
-  trailingSlash: false, // Recommended for Netlify deployments
+  // Setting for improved compatibility
+  trailingSlash: false,
+  // Vercel will automatically detect the output directory
   images: {
     remotePatterns: [
       ...[NEXT_PUBLIC_SERVER_URL].map((item) => {

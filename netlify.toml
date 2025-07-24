@@ -17,6 +17,11 @@
   node_bundler = "esbuild"
 
 # Handle Next.js rewrites and redirects
+# Force include the redirects file
+[build.publish]
+  publish = ".next"
+  functions = ".netlify/functions/"
+
 [[redirects]]
   from = "/_next/static/*"
   to = "/_next/static/:splat"
@@ -27,6 +32,34 @@
   to = "/.netlify/functions/___netlify-handler"
   status = 200
 
+# Specific custom page redirects
+[[redirects]]
+  from = "/about"
+  to = "/.netlify/functions/___netlify-handler"
+  status = 200
+
+[[redirects]]
+  from = "/services"
+  to = "/.netlify/functions/___netlify-handler"
+  status = 200
+
+[[redirects]]
+  from = "/pricing"
+  to = "/.netlify/functions/___netlify-handler"
+  status = 200
+
+[[redirects]]
+  from = "/contact"
+  to = "/.netlify/functions/___netlify-handler"
+  status = 200
+
+# Root page redirect
+[[redirects]]
+  from = "/"
+  to = "/.netlify/functions/___netlify-handler"
+  status = 200
+
+# Catch-all must be last
 [[redirects]]
   from = "/*"
   to = "/.netlify/functions/___netlify-handler"
