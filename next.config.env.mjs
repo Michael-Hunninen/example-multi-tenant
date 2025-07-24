@@ -11,7 +11,7 @@ if (!process.env.PAYLOAD_SECRET) {
 }
 
 if (!process.env.PAYLOAD_PUBLIC_SERVER_URL) {
-  process.env.PAYLOAD_PUBLIC_SERVER_URL = 'https://your-site.netlify.app';
+  process.env.PAYLOAD_PUBLIC_SERVER_URL = 'https://clubsolve.netlify.app';
 }
 
 export {};
