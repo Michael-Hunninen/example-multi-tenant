@@ -1,8 +1,11 @@
-// Import from the (frontend) route
-import FrontendPage from './(frontend)/page'
+// Import the CustomHomepage component directly
+import CustomHomepage from './(frontend)/_components/CustomHomepage'
+import { generateMetadata } from './(frontend)/page'
 
-// Re-export the (frontend) page component as the root page
-export default FrontendPage
+// Set the JG Performance homepage as the root page
+export default function RootPage() {
+  return <CustomHomepage />
+}
 
-// Re-export any metadata or other exports from (frontend)
-export { generateMetadata } from './(frontend)/page'
+// Re-export metadata from frontend
+export { generateMetadata }
