@@ -6,7 +6,7 @@
   "env": {
     "NEXT_PHASE": "phase-production-build"
   },
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./{package.json,pnpm-lock.yaml}",
+  "__comment": "No ignoreCommand to ensure builds always run",
   "rewrites": [
     { "source": "/about", "destination": "/about" },
     { "source": "/services", "destination": "/services" },
