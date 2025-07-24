@@ -1,6 +1,7 @@
 import React from 'react'
+import FrontendLayoutClient from './layout.client'
 
-// This is now just a pass-through layout since we moved all the layout logic to the root layout
+// Enhanced layout with client component wrapper to help generate client reference manifest
 export default function FrontendLayout({ children }: { children: React.ReactNode }) {
-  return children
+  return <FrontendLayoutClient>{children}</FrontendLayoutClient>
 }
