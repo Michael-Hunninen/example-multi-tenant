@@ -16,8 +16,10 @@ import PageClient from './page.client'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import CustomHomepage from '../_components/CustomHomepage'
 import { notFound } from 'next/navigation'
+import { withSafeStaticGeneration } from '../../../utils/buildStaticGeneration'
 
-export async function generateStaticParams() {
+// Original function wrapped with safety utility to skip DB access during build
+const originalGenerateStaticParams = async () => {
   const payload = await getPayload({ config: configPromise })
   const pages = await payload.find({
     collection: 'pages',
@@ -40,6 +42,9 @@ export async function generateStaticParams() {
 
   return params
 }
+
+// Export the safe version that won't try to connect during build
+export const generateStaticParams = withSafeStaticGeneration(originalGenerateStaticParams)
 
 type Args = {
   params: Promise<{

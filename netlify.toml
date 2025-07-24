@@ -1,10 +1,11 @@
 [build]
   publish = ".next"
-  command = "npm run build"
+  command = "node netlify-build.js && powershell -Command \"$env:NEXT_PHASE='phase-production-build'; pnpm build\""
 
 [build.environment]
   NODE_VERSION = "18"
   NPM_USE_PRODUCTION = "false"
+  NEXT_PHASE = "phase-production-build"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
@@ -63,13 +64,13 @@
 
 # Environment-specific settings
 [context.production]
-  command = "npm run build"
+  command = "pnpm build"
 
 [context.deploy-preview]
-  command = "npm run build"
+  command = "pnpm build"
 
 [context.branch-deploy]
-  command = "npm run build"
+  command = "pnpm build"
 
 # Form handling (if needed for contact forms)
 [forms]

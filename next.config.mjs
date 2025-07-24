@@ -1,12 +1,21 @@
 import { withPayload } from '@payloadcms/next/withPayload'
 import withPWA from 'next-pwa'
 
+// Import environment configuration
+import './next.config.env.mjs'
+
 const NEXT_PUBLIC_SERVER_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL
   ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
   : undefined || process.env.__NEXT_PRIVATE_ORIGIN || 'http://localhost:3000'
 
+// Detect if running locally (Windows) or in Netlify (Linux)
+const isLocalBuild = process.platform === 'win32';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Only use standalone output in production (Netlify) environment
+  // This avoids Windows symlink permission errors during local builds
+  output: isLocalBuild ? undefined : 'standalone',
   // Tenant routing is handled by middleware instead of rewrites
   // Add configurations from website template
   images: {
