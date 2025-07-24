@@ -16,7 +16,7 @@ import { draftMode } from 'next/headers'
 import { BrandingProvider } from '@/contexts/BrandingContext'
 import { getTenantByDomain } from '@/utilities/getTenantByDomain'
 import { isCustomPagesEnabled } from '@/utilities/getDomainInfo'
-import './globals.css'
+import './(frontend)/globals.css'
 import { getServerSideURL } from '@/utilities/getURL'
 import PWAMetadata from '@/components/PWAMetadata'
 
