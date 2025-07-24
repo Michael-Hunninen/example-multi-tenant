@@ -14,8 +14,7 @@ import { PayloadRedirects } from '@/components/PayloadRedirects'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import CustomHomepage from './_components/CustomHomepage'
 
-// Import the client component
-import FrontendClient from './page.client'
+// Client component removed to avoid Vercel manifest issues
 
 export default async function HomePage() {
   const { isEnabled: draft } = await draftMode()
@@ -31,11 +30,7 @@ export default async function HomePage() {
   
   // If custom pages are enabled, always show custom homepage for root
   if (customPagesEnabled) {
-    return (
-      <FrontendClient>
-        <CustomHomepage />
-      </FrontendClient>
-    )
+    return <CustomHomepage />
   }
   
   // Default page behavior for the home page
@@ -72,13 +67,11 @@ export default async function HomePage() {
   const { hero, layout } = page
   
   return (
-    <FrontendClient>
-      <article className="pt-16 pb-24">
-        {draft && <LivePreviewListener />}
-        <RenderHero {...hero} />
-        <RenderBlocks blocks={layout} />
-      </article>
-    </FrontendClient>
+    <article className="pt-16 pb-24">
+      {draft && <LivePreviewListener />}
+      <RenderHero {...hero} />
+      <RenderBlocks blocks={layout} />
+    </article>
   )
 }
 

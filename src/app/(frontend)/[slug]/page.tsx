@@ -12,7 +12,7 @@ import { RenderHero } from '@/heros/RenderHero'
 import { generateMeta } from '@/utilities/generateMeta'
 import { getTenantByDomain } from '@/utilities/getTenantByDomain'
 import { getDomainInfo } from '@/utilities/getDomainInfo'
-import PageClient from './page.client'
+// Client component removed to avoid Vercel manifest issues
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import CustomHomepage from '../_components/CustomHomepage'
 import { notFound } from 'next/navigation'
@@ -133,17 +133,15 @@ export default async function Page({ params: paramsPromise }: Args) {
   const { hero, layout } = page
 
   return (
-    <PageClient>
-      <article className="pt-16 pb-24">
-        {/* Allows redirects for valid pages too */}
-        <PayloadRedirects disableNotFound url={url} />
+    <article className="pt-16 pb-24">
+      {/* Allows redirects for valid pages too */}
+      <PayloadRedirects disableNotFound url={url} />
 
-        {draft && <LivePreviewListener />}
+      {draft && <LivePreviewListener />}
 
-        <RenderHero {...hero} />
-        <RenderBlocks blocks={layout} />
-      </article>
-    </PageClient>
+      <RenderHero {...hero} />
+      <RenderBlocks blocks={layout} />
+    </article>
   )
 }
 
