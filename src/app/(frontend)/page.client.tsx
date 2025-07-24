@@ -1,8 +1,12 @@
 'use client'
-import React, { useEffect } from 'react'
+import React, { useEffect, type ReactNode } from 'react'
 import { useHeaderTheme } from '@/providers'
 
-const FrontendClient: React.FC = () => {
+interface ClientWrapperProps {
+  children?: ReactNode
+}
+
+const FrontendClient: React.FC<ClientWrapperProps> = ({ children }) => {
   /* Set the header theme for frontend pages */
   const { setHeaderTheme } = useHeaderTheme()
 
@@ -10,7 +14,7 @@ const FrontendClient: React.FC = () => {
     setHeaderTheme('light')
   }, [setHeaderTheme])
   
-  return <React.Fragment />
+  return <>{children}</>
 }
 
 export default FrontendClient

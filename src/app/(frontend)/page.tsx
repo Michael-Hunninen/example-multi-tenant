@@ -14,6 +14,9 @@ import { PayloadRedirects } from '@/components/PayloadRedirects'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import CustomHomepage from './_components/CustomHomepage'
 
+// Import the client component
+import FrontendClient from './page.client'
+
 export default async function HomePage() {
   const { isEnabled: draft } = await draftMode()
   
@@ -28,7 +31,11 @@ export default async function HomePage() {
   
   // If custom pages are enabled, always show custom homepage for root
   if (customPagesEnabled) {
-    return <CustomHomepage />
+    return (
+      <FrontendClient>
+        <CustomHomepage />
+      </FrontendClient>
+    )
   }
   
   // Default page behavior for the home page
@@ -65,12 +72,13 @@ export default async function HomePage() {
   const { hero, layout } = page
   
   return (
-    <article className="pt-16 pb-24">
-      {/* Client wrapper removed to avoid client reference manifest issues */}
-      {draft && <LivePreviewListener />}
-      <RenderHero {...hero} />
-      <RenderBlocks blocks={layout} />
-    </article>
+    <FrontendClient>
+      <article className="pt-16 pb-24">
+        {draft && <LivePreviewListener />}
+        <RenderHero {...hero} />
+        <RenderBlocks blocks={layout} />
+      </article>
+    </FrontendClient>
   )
 }
 
