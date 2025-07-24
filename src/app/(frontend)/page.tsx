@@ -14,9 +14,8 @@ import { PayloadRedirects } from '@/components/PayloadRedirects'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import CustomHomepage from './_components/CustomHomepage'
 
-// Import client components to ensure proper client reference manifest generation
-import './page.client'
-import ClientComponent from './client-component'
+// Import client entry point to ensure proper client reference manifest generation
+import FrontendClientEntry from './_client-entry'
 
 export default async function HomePage() {
   const { isEnabled: draft } = await draftMode()
@@ -71,7 +70,7 @@ export default async function HomePage() {
   return (
     <article className="pt-16 pb-24">
       {draft && <LivePreviewListener />}
-      <ClientComponent />
+      <FrontendClientEntry />
       <RenderHero {...hero} />
       <RenderBlocks blocks={layout} />
     </article>
