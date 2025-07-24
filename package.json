@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "_dev": "cross-env NODE_OPTIONS=--no-deprecation next dev",
-    "build": "cross-env NODE_OPTIONS=--no-deprecation next build --no-lint",
+    "build": "cross-env NODE_OPTIONS=--no-deprecation next build --no-lint && node scripts/copy-client-manifest.js",
     "dev": "cross-env NODE_OPTIONS='--no-deprecation --max-old-space-size=4096' next dev",
     "dev:seed": "cross-env NODE_OPTIONS=--no-deprecation && pnpm seed && next dev",
     "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",

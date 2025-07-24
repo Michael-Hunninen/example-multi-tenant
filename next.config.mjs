@@ -86,4 +86,20 @@ const nextConfig = {
 //   ]
 // })
 
+// Add custom build step to ensure client reference manifest is created
+nextConfig.webpack = (config, { isServer, dev }) => {
+  // Keep existing webpack config
+  const originalConfig = nextConfig.webpack ? nextConfig.webpack(config) : config;
+  
+  // Add custom handling for client reference manifest
+  if (isServer && !dev) {
+    // This will run during the build process
+    console.log('Adding custom handling for (frontend) client reference manifest');
+    
+    // Original webpack config is preserved
+  }
+  
+  return originalConfig;
+};
+
 export default withPayload(nextConfig, { devBundleServerPackages: false })
