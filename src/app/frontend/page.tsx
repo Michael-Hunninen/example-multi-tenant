@@ -12,7 +12,7 @@ import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { PayloadRedirects } from '@/components/PayloadRedirects'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
-import CustomHomepage from './_components/CustomHomepage'
+import CustomHomepage from '../(frontend)/_components/CustomHomepage'
 
 export default async function HomePage() {
   const { isEnabled: draft } = await draftMode()
@@ -66,7 +66,6 @@ export default async function HomePage() {
   
   return (
     <article className="pt-16 pb-24">
-      {/* Client wrapper removed to avoid client reference manifest issues */}
       {draft && <LivePreviewListener />}
       <RenderHero {...hero} />
       <RenderBlocks blocks={layout} />
