@@ -17,12 +17,12 @@ export const Comments: CollectionConfig = {
     update: ({ req: { user } }) => {
       if (!user) return false
       // Users can only update their own comments unless they're admin
-      return user.role === 'admin' ? true : { user: { equals: user.id } }
+      return user.roles?.includes('admin') ? true : { user: { equals: user.id } }
     },
     delete: ({ req: { user } }) => {
       if (!user) return false
       // Users can only delete their own comments unless they're admin
-      return user.role === 'admin' ? true : { user: { equals: user.id } }
+      return user.roles?.includes('admin') ? true : { user: { equals: user.id } }
     },
   },
   fields: [

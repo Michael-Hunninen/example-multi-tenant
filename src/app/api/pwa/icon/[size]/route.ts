@@ -6,9 +6,10 @@ import sharp from 'sharp'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { size: string } }
+  context: { params: Promise<{ size: string }> }
 ) {
   try {
+    const params = await context.params;
     const size = parseInt(params.size)
     if (isNaN(size) || size < 16 || size > 1024) {
       return NextResponse.json({ error: 'Invalid size' }, { status: 400 })
@@ -57,8 +58,8 @@ export async function GET(
     
     // Return a simple fallback icon
     const fallbackIcon = await generateIconWithInitials(
-      parseInt(params.size.split('x')[0]) || 192,
-      parseInt(params.size.split('x')[1]) || 192,
+      parseInt((await context.params).size.split('x')[0]) || 192,
+      parseInt((await context.params).size.split('x')[1]) || 192,
       '#14b8a6',
       '#000000',
       'JG'

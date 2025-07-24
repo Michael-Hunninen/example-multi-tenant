@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { Phone, Mail, MapPin, Clock, MessageSquare, Calendar } from 'lucide-react'
+import { Phone, Mail, MapPin, Clock, MessageSquare, Calendar, User } from 'lucide-react'
 import CustomHeader from './CustomHeader'
 
 export default function ContactPage() {

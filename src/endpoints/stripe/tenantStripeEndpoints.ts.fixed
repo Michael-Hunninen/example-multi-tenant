@@ -1,27 +1,20 @@
 import { Payload } from 'payload'
 import type { PayloadRequest } from 'payload'
-// Import only what's available directly from payload
 import Stripe from 'stripe'
 import { initTenantStripe, getTenantStripeConfig } from '../../utilities/getTenantStripeConfig'
 
-// Define our endpoint type based on what we see in the error message
-// The error was about expecting 3 or more arguments
-type PayloadHandler = (req: PayloadRequest, res: any, next: any) => Promise<any>
-
-interface CustomEndpoint {
-  path: string;
-  method: string;
-  handler: PayloadHandler;
-}
+// Updated to match PayloadHandler signature which expects multiple args
+// According to error message, we need at least 2 arguments
+type EndpointHandler = (req: PayloadRequest, res: any, next: any) => Promise<any>
 
 /**
  * Create a tenant-aware Stripe payment intent endpoint
  * Replaces the default /api/stripe/create-payment-intent endpoint from the plugin
  */
-export const createTenantPaymentIntentEndpoint: CustomEndpoint = {
+export const createTenantPaymentIntentEndpoint = {
   path: '/stripe/create-tenant-payment-intent',
   method: 'post',
-  handler: async (req: PayloadRequest, res, next) => {
+  handler: async (req: PayloadRequest, res: any, next: any) => {
     const { payload } = req
     
     try {
@@ -66,10 +59,10 @@ export const createTenantPaymentIntentEndpoint: CustomEndpoint = {
 /**
  * Create a tenant-aware Stripe checkout session endpoint
  */
-export const createTenantCheckoutSessionEndpoint: CustomEndpoint = {
+export const createTenantCheckoutSessionEndpoint = {
   path: '/stripe/create-tenant-checkout-session',
   method: 'post',
-  handler: async (req: PayloadRequest, res, next) => {
+  handler: async (req: PayloadRequest, res: any, next: any) => {
     const { payload } = req
     
     try {
@@ -128,10 +121,10 @@ export const createTenantCheckoutSessionEndpoint: CustomEndpoint = {
 /**
  * Endpoint to get publishable key for current tenant
  */
-export const getTenantPublishableKeyEndpoint: CustomEndpoint = {
+export const getTenantPublishableKeyEndpoint = {
   path: '/stripe/tenant-publishable-key',
   method: 'get',
-  handler: async (req: PayloadRequest, res, next) => {
+  handler: async (req: PayloadRequest, res: any, next: any) => {
     const { payload } = req
     
     try {
@@ -159,10 +152,10 @@ export const getTenantPublishableKeyEndpoint: CustomEndpoint = {
  * Create a tenant-aware Stripe webhook handler endpoint
  * This will process webhooks using the tenant's webhook secret
  */
-export const tenantWebhookEndpoint: CustomEndpoint = {
+export const tenantWebhookEndpoint = {
   path: '/stripe/tenant-webhooks',
   method: 'post',
-  handler: async (req: PayloadRequest, res, next) => {
+  handler: async (req: PayloadRequest, res: any, next: any) => {
     const { payload } = req
     
     try {
@@ -315,7 +308,7 @@ export const tenantWebhookEndpoint: CustomEndpoint = {
 }
 
 // Export all tenant-aware Stripe endpoints
-export const tenantStripeEndpoints: CustomEndpoint[] = [
+export const tenantStripeEndpoints = [
   createTenantPaymentIntentEndpoint,
   createTenantCheckoutSessionEndpoint,
   getTenantPublishableKeyEndpoint,

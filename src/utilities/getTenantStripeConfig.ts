@@ -1,7 +1,12 @@
 import { Payload } from 'payload'
 import Stripe from 'stripe'
-import type { PayloadRequest } from 'payload/types'
-import type { User } from '../payload-types'
+import type { PayloadRequest } from 'payload'
+import type { User, Tenant } from '../payload-types'
+
+// Extend PayloadRequest to include tenant property added by multi-tenant plugin
+interface TenantPayloadRequest extends PayloadRequest {
+  tenant?: Tenant
+}
 
 interface TenantStripeConfig {
   secretKey: string | null
@@ -25,7 +30,7 @@ const emptyConfig: TenantStripeConfig = {
  * Falls back to environment variables if not set in tenant config
  */
 export const getTenantStripeConfig = async (
-  req: PayloadRequest,
+  req: TenantPayloadRequest,
   payload: Payload,
 ): Promise<TenantStripeConfig> => {
   try {
@@ -78,7 +83,7 @@ export const getTenantStripeConfig = async (
  * Initialize a Stripe instance with tenant-specific API key
  */
 export const initTenantStripe = async (
-  req: PayloadRequest,
+  req: TenantPayloadRequest,
   payload: Payload,
 ): Promise<Stripe | null> => {
   const config = await getTenantStripeConfig(req, payload)

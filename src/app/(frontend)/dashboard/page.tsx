@@ -17,6 +17,14 @@ import DefaultDashboard from '../_components/DefaultDashboard'
 import DashboardWalkthrough from '../_components/DashboardWalkthrough'
 import { getUserPermissions } from '@/utilities/userPermissions'
 import LockedFeatureCard from '@/components/LockedFeatureCard'
+import { Video, Category, Media } from '@/payload-types'
+
+// Extended interface for videos with progress information
+interface VideoWithProgress extends Omit<Video, 'thumbnail' | 'category'> {
+  thumbnail: string;
+  category: string;
+  progress?: number;
+}
 
 // Client component to fetch data with authenticated user
 function DashboardContent() {
@@ -220,7 +228,7 @@ function DashboardContent() {
 
           <div className="space-y-4">
             {recentVideos.length > 0 ? (
-              recentVideos.map((video) => (
+              recentVideos.map((video: VideoWithProgress) => (
                 <Card key={video.id} className="relative overflow-hidden border-gray-800 hover:border-gray-700 transition-colors group">
                   <Link href={`/dashboard/videos/${video.id}`} className="block">
                     {/* Background Image */}

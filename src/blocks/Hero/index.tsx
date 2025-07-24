@@ -5,6 +5,7 @@ import { Media } from '../../components/Media'
 import RichText from '../../components/RichText'
 import { CMSLink } from '../../components/Link'
 import classes from './index.module.scss'
+import type { Media as MediaType } from '@/payload-types'
 
 // Define our own type since it might not be in payload-types yet
 type HeroBlockType = {
@@ -15,6 +16,8 @@ type HeroBlockType = {
     id: string
     alt?: string
     url?: string
+    updatedAt?: string
+    createdAt?: string
   }
   primaryButton?: {
     label?: string
@@ -46,7 +49,13 @@ export const HeroBlock: React.FC<HeroBlockType> = ({
         {media && (
           <div className={classes.media}>
             <Media
-              resource={typeof media === 'string' ? (media || null) : (media?.id ? media : null)}
+              resource={typeof media === 'string' ? (media || null) : (media?.id ? {
+                id: media.id,
+                alt: media.alt,
+                url: media.url || '',
+                updatedAt: media.updatedAt || new Date().toISOString(),
+                createdAt: media.createdAt || new Date().toISOString()
+              } : null)}
               alt={media?.alt || ''}
               className={classes.mediaImage}
               fill

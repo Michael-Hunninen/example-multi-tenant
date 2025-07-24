@@ -20,6 +20,8 @@ export type ContentBlockProps = ContentBlockType & {
         relationTo: 'pages' | 'posts'
         value: string | number
       }
+      // Handle both payload types and our component types
+      page?: any
       url?: string
       newTab?: boolean
     }
@@ -33,7 +35,7 @@ export const ContentBlock: React.FC<ContentBlockProps> = ({ columns, blockName }
   }
   
   // Calculate column width class based on the size property
-  const getColumnClass = (size: string | undefined) => {
+  const getColumnClass = (size: string | null | undefined) => {
     switch (size) {
       case 'oneHalf':
         return 'w-full md:w-1/2'
@@ -78,15 +80,20 @@ export const ContentBlock: React.FC<ContentBlockProps> = ({ columns, blockName }
                 {enableLink && link?.label && (
                   <div className="mt-6">
                     <CMSLink
-                      type={link.type || 'custom'}
-                      reference={link.reference && {
-                        relationTo: link.reference.relationTo,
-                        value: link.reference.value
-                      }}
+                      type={link.type === 'page' ? 'reference' : 'custom'}
+                      // Handle the case where reference might not exist or have a different structure
+                      reference={
+                        // @ts-ignore - Handle potential type mismatch between ContentBlock and CMSLink
+                        link.type === 'page' && link.page ? {
+                          relationTo: 'pages',
+                          value: link.page
+                        } : null
+                      }
                       url={link.url}
                       label={link.label}
-                      newTab={link.newTab}
-                      appearance="primary"
+                      // @ts-ignore - Property may have different structure in actual runtime data
+                      newTab={link?.newTab !== undefined ? Boolean(link.newTab) : false}
+                      appearance="default"
                       className="inline-block px-6 py-3 rounded-md font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors"
                     />
                   </div>

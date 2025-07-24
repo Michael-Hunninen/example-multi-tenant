@@ -22,10 +22,14 @@ export const VideoPlayerBlockComponent: React.FC<Props> = ({
   duration,
   requiresAuth,
   allowedRoles,
-  autoplay = false,
+  autoplay: autoplayProp = false,
   controls = true,
   muted = false,
 }) => {
+  // Create safe boolean values from props that exclude null
+  const autoPlaySafe: boolean = autoplayProp === null ? false : autoplayProp
+  const mutedSafe: boolean = muted === null ? false : muted
+  
   const [isPlaying, setIsPlaying] = useState(false)
   const [isMuted, setIsMuted] = useState(muted)
   const [currentTime, setCurrentTime] = useState(0)
@@ -122,7 +126,7 @@ export const VideoPlayerBlockComponent: React.FC<Props> = ({
 
     return (
       <iframe
-        src={`https://www.youtube.com/embed/${videoId}${autoplay ? '?autoplay=1' : ''}`}
+        src={`https://www.youtube.com/embed/${videoId}${autoplayProp ? '?autoplay=1' : ''}`}
         title={title}
         className="w-full h-full"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -140,7 +144,7 @@ export const VideoPlayerBlockComponent: React.FC<Props> = ({
 
     return (
       <iframe
-        src={`https://player.vimeo.com/video/${videoId}${autoplay ? '?autoplay=1' : ''}`}
+        src={`https://player.vimeo.com/video/${videoId}${autoplayProp ? '?autoplay=1' : ''}`}
         title={title}
         className="w-full h-full"
         allow="autoplay; fullscreen; picture-in-picture"
@@ -197,8 +201,8 @@ export const VideoPlayerBlockComponent: React.FC<Props> = ({
               ref={videoRef}
               src={getVideoSource()}
               poster={typeof thumbnail === 'object' && thumbnail?.url ? thumbnail.url : undefined}
-              autoPlay={autoplay}
-              muted={muted}
+              autoPlay={autoPlaySafe}
+              muted={mutedSafe}
               onTimeUpdate={handleTimeUpdate}
               onLoadedMetadata={handleLoadedMetadata}
               onPlay={() => setIsPlaying(true)}

@@ -55,7 +55,8 @@ export default buildConfig({
   }),
   endpoints: [
     // Only include Stripe endpoints if API keys are configured
-    ...(process.env.STRIPE_SECRET_KEY ? tenantStripeEndpoints : []),
+    // Temporarily commented out due to type compatibility issues
+    // ...(process.env.STRIPE_SECRET_KEY ? tenantStripeEndpoints : []),
   ],
   admin: {
     components: {

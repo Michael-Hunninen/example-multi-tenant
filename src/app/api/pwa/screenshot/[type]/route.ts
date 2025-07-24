@@ -6,8 +6,11 @@ import sharp from 'sharp'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { type: string } }
+  context: { params: Promise<{ type: string }> }
 ) {
+  // Move params outside try/catch to be accessible in both scopes
+  const params = await context.params;
+  
   try {
     const { type } = params
     
