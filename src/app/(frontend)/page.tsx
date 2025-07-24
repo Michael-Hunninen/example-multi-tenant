@@ -14,8 +14,11 @@ import { PayloadRedirects } from '@/components/PayloadRedirects'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import CustomHomepage from './_components/CustomHomepage'
 
-// Import client entry point to ensure proper client reference manifest generation
+// Import client components to ensure proper client reference manifest generation
 import FrontendClientEntry from './_client-entry'
+
+// Import the page.client.js file to ensure proper client reference manifest generation
+import './page.client.js'
 
 export default async function HomePage() {
   const { isEnabled: draft } = await draftMode()
