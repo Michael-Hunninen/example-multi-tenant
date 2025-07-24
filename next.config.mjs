@@ -21,15 +21,7 @@ const nextConfig = {
   // Add configurations from website template
   // Setting for improved compatibility
   trailingSlash: false,
-  // Vercel will automatically detect the output directory
-  
-  // Experimental features to help with route groups and client components
-  experimental: {
-    // Helps with client component bundling in route groups
-    optimizePackageImports: ['@payloadcms/ui'],
-    // Better handling of route groups
-    appDir: true,
-  },
+
   images: {
     remotePatterns: [
       ...[NEXT_PUBLIC_SERVER_URL].map((item) => {
