@@ -45,6 +45,9 @@ export async function middleware(request: NextRequest) {
   // For development, set a default tenant
   if (hostname === 'localhost:3000' || hostname === 'localhost' || hostname === '127.0.0.1') {
     requestHeaders.set('x-tenant-slug', 'agency-owner')
+  } else if (hostname.includes('netlify.app') || hostname.includes('vercel.app')) {
+    // For Netlify/Vercel deployments, use default tenant
+    requestHeaders.set('x-tenant-slug', 'agency-owner')
   } else {
     // For production, extract tenant from domain
     // This could be a subdomain (tenant.domain.com) or custom domain (tenant-domain.com)
