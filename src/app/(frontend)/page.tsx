@@ -14,7 +14,9 @@ import { PayloadRedirects } from '@/components/PayloadRedirects'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import CustomHomepage from './_components/CustomHomepage'
 
-// Client component removed to avoid Vercel manifest issues
+// Import the client component but don't use it directly in the render tree
+// This ensures the client reference is created properly
+import './page.client'
 
 export default async function HomePage() {
   const { isEnabled: draft } = await draftMode()
