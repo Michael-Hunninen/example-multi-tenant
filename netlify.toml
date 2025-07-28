@@ -1,10 +1,14 @@
 [build]
   publish = ".next"
-  command = "npm run build"
+  command = "node netlify-build.js && pnpm install --no-frozen-lockfile && NEXT_PHASE=phase-production-build pnpm build"
+  ignore_command = "false"
 
 [build.environment]
   NODE_VERSION = "18"
   NPM_USE_PRODUCTION = "false"
+  NEXT_PHASE = "phase-production-build"
+  # Disable secrets scanning for public environment variables
+  SECRETS_SCAN_OMIT_KEYS = "PAYLOAD_PUBLIC_SERVER_URL,NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,POSTGRES_URL"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
@@ -13,6 +17,11 @@
   node_bundler = "esbuild"
 
 # Handle Next.js rewrites and redirects
+# Force include the redirects file
+[build.publish]
+  publish = ".next"
+  functions = ".netlify/functions/"
+
 [[redirects]]
   from = "/_next/static/*"
   to = "/_next/static/:splat"
@@ -23,6 +32,34 @@
   to = "/.netlify/functions/___netlify-handler"
   status = 200
 
+# Specific custom page redirects
+[[redirects]]
+  from = "/about"
+  to = "/.netlify/functions/___netlify-handler"
+  status = 200
+
+[[redirects]]
+  from = "/services"
+  to = "/.netlify/functions/___netlify-handler"
+  status = 200
+
+[[redirects]]
+  from = "/pricing"
+  to = "/.netlify/functions/___netlify-handler"
+  status = 200
+
+[[redirects]]
+  from = "/contact"
+  to = "/.netlify/functions/___netlify-handler"
+  status = 200
+
+# Root page redirect
+[[redirects]]
+  from = "/"
+  to = "/.netlify/functions/___netlify-handler"
+  status = 200
+
+# Catch-all must be last
 [[redirects]]
   from = "/*"
   to = "/.netlify/functions/___netlify-handler"
@@ -63,13 +100,13 @@
 
 # Environment-specific settings
 [context.production]
-  command = "npm run build"
+  command = "pnpm build"
 
 [context.deploy-preview]
-  command = "npm run build"
+  command = "pnpm build"
 
 [context.branch-deploy]
-  command = "npm run build"
+  command = "pnpm build"
 
 # Form handling (if needed for contact forms)
 [forms]

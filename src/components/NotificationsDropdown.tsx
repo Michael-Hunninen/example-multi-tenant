@@ -21,7 +21,7 @@ interface Notification {
   title: string
   message: string
   timestamp: Date
-  read: boolean
+  isRead: boolean
   actionUrl?: string
   metadata?: {
     videoId?: string
@@ -108,107 +108,34 @@ export default function NotificationsDropdown() {
     }
   }, [user])
 
-  const markAsRead = async (notificationId: string) => {
-    // Optimistically update UI
+  const markAsRead = (notificationId: string) => {
     setNotifications(prev => 
       prev.map(notification => 
         notification.id === notificationId 
-          ? { ...notification, read: true }
+          ? { ...notification, isRead: true }
           : notification
       )
     )
     setUnreadCount(prev => Math.max(0, prev - 1))
-
-    // Persist to backend
-    try {
-      const response = await fetch('/api/lms/notifications/mark-read', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ id: notificationId })
-      })
-      
-      if (!response.ok) {
-        console.error('Failed to mark notification as read:', await response.text())
-        // Revert UI change on failure
-        setNotifications(prev => 
-          prev.map(notification => 
-            notification.id === notificationId 
-              ? { ...notification, read: false }
-              : notification
-          )
-        )
-        setUnreadCount(prev => prev + 1)
-      }
-    } catch (error) {
-      console.error('Error marking notification as read:', error)
-      // Revert UI change on failure
-      setNotifications(prev => 
-        prev.map(notification => 
-          notification.id === notificationId 
-            ? { ...notification, isRead: false }
-            : notification
-        )
-      )
-      setUnreadCount(prev => prev + 1)
-    }
   }
 
-  const markAllAsRead = async () => {
-    // Optimistically update UI
+  const markAllAsRead = () => {
     setNotifications(prev => 
-      prev.map(notification => ({ ...notification, read: true }))
+      prev.map(notification => ({ ...notification, isRead: true }))
     )
-    const prevUnreadCount = unreadCount
     setUnreadCount(0)
-
-    // Persist to backend
-    try {
-      const response = await fetch('/api/lms/notifications/mark-read', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ allNotifications: true })
-      })
-      
-      if (!response.ok) {
-        console.error('Failed to mark all notifications as read:', await response.text())
-        // Revert UI change on failure
-        setNotifications(prev => 
-          prev.map((notification, index) => 
-            index < prevUnreadCount 
-              ? { ...notification, read: false }
-              : notification
-          )
-        )
-        setUnreadCount(prevUnreadCount)
-      }
-    } catch (error) {
-      console.error('Error marking all notifications as read:', error)
-      // Revert UI change on failure
-      setNotifications(prev => 
-        prev.map((notification, index) => 
-          index < prevUnreadCount 
-            ? { ...notification, read: false }
-            : notification
-        )
-      )
-      setUnreadCount(prevUnreadCount)
-    }
   }
 
   const deleteNotification = (notificationId: string) => {
     setNotifications(prev => prev.filter(n => n.id !== notificationId))
     const notification = notifications.find(n => n.id === notificationId)
-    if (notification && !notification.read) {
+    if (notification && !notification.isRead) {
       setUnreadCount(prev => Math.max(0, prev - 1))
     }
   }
 
   const handleNotificationClick = (notification: Notification) => {
-    if (!notification.read) {
+    if (!notification.isRead) {
       markAsRead(notification.id)
     }
     
@@ -268,7 +195,7 @@ export default function NotificationsDropdown() {
                 <div
                   key={notification.id}
                   className={`relative group border-b border-gray-800/50 last:border-b-0 ${
-                    !notification.read ? 'bg-gray-800/30' : ''
+                    !notification.isRead ? 'bg-gray-800/30' : ''
                   }`}
                 >
                   <button
@@ -282,16 +209,16 @@ export default function NotificationsDropdown() {
                       <div className="flex-grow min-w-0">
                         <div className="flex items-start justify-between">
                           <h4 className={`text-sm font-medium ${
-                            notification.read ? 'text-gray-300' : 'text-white'
+                            notification.isRead ? 'text-gray-300' : 'text-white'
                           }`}>
                             {notification.title}
                           </h4>
-                          {!notification.read && (
+                          {!notification.isRead && (
                             <div className="w-2 h-2 bg-teal-400 rounded-full flex-shrink-0 mt-1"></div>
                           )}
                         </div>
                         <p className={`text-xs mt-1 line-clamp-2 ${
-                          notification.read ? 'text-gray-500' : 'text-gray-400'
+                          notification.isRead ? 'text-gray-500' : 'text-gray-400'
                         }`}>
                           {notification.message}
                         </p>
@@ -304,7 +231,7 @@ export default function NotificationsDropdown() {
                   
                   <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <div className="flex gap-1">
-                      {!notification.read && (
+                      {!notification.isRead && (
                         <Button
                           variant="ghost"
                           size="sm"
