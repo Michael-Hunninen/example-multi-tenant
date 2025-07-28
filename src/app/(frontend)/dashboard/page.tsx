@@ -9,7 +9,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import Link from "next/link"
 import Image from "next/image"
 import { Play, Clock, Users, Trophy, BookOpen, TrendingUp, Award, Calendar, ChevronRight, Star, BarChart3 } from "lucide-react"
-import { LargeRealtimeClock } from '@/components/RealtimeClock'
 import { useAuth } from '@/components/LMSAuth/AuthWrapper'
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
@@ -17,6 +16,14 @@ import DefaultDashboard from '../_components/DefaultDashboard'
 import DashboardWalkthrough from '../_components/DashboardWalkthrough'
 import { getUserPermissions } from '@/utilities/userPermissions'
 import LockedFeatureCard from '@/components/LockedFeatureCard'
+import { Video, Category, Media } from '@/payload-types'
+
+// Extended interface for videos with progress information
+interface VideoWithProgress extends Omit<Video, 'thumbnail' | 'category'> {
+  thumbnail: string;
+  category: string;
+  progress?: number;
+}
 
 // Client component to fetch data with authenticated user
 function DashboardContent() {
@@ -40,19 +47,6 @@ function DashboardContent() {
     }
   }, [searchParams])
   
-  // Listen for Tutorial button clicks
-  useEffect(() => {
-    const handleStartTutorial = () => {
-      setShowWalkthrough(true)
-    }
-    
-    window.addEventListener('startTutorial', handleStartTutorial)
-    
-    return () => {
-      window.removeEventListener('startTutorial', handleStartTutorial)
-    }
-  }, [])
-  
   useEffect(() => {
     async function fetchDashboardData() {
       if (!user?.id) return
@@ -60,29 +54,27 @@ function DashboardContent() {
       try {
         setLoading(true)
         // Fetch real data using API routes to avoid server-side import issues
-        const [dashboardStatsRes, featuredContentRes, userEnrollmentsRes, userPointsRes, upcomingLessonsRes, learningTimeRes, recentVideosRes, recentActivityRes] = await Promise.all([
+        const [dashboardStatsRes, featuredContentRes, userEnrollmentsRes, userPointsRes, upcomingLessonsRes, learningTimeRes, recentVideosRes] = await Promise.all([
           fetch(`/api/lms/dashboard-stats?userId=${user.id}`),
           fetch('/api/lms/featured-content'),
           fetch(`/api/lms/user-enrollments?userId=${user.id}&limit=3&status=active`),
           fetch(`/api/lms/user-points?userId=${user.id}`),
           fetch(`/api/lms/upcoming-lessons?userId=${user.id}&limit=3`),
           fetch(`/api/lms/user-learning-time?userId=${user.id}`),
-          fetch(`/api/lms/recent-videos-progress?userId=${user.id}`),
-          fetch(`/api/lms/profile?userId=${user.id}`)
+          fetch(`/api/lms/recent-videos-progress?userId=${user.id}`)
         ])
         
-        const [dashboardStats, featuredContent, userEnrollments, userPoints, upcomingLessons, learningTime, recentVideosData, recentActivityData] = await Promise.all([
+        const [dashboardStats, featuredContent, userEnrollments, userPoints, upcomingLessons, learningTime, recentVideosData] = await Promise.all([
           dashboardStatsRes.json(),
           featuredContentRes.json(),
           userEnrollmentsRes.json(),
           userPointsRes.json(),
           upcomingLessonsRes.json(),
           learningTimeRes.json(),
-          recentVideosRes.json(),
-          recentActivityRes.json()
+          recentVideosRes.json()
         ])
         
-        setDashboardData({ dashboardStats, featuredContent, userEnrollments, userPoints, upcomingLessons, learningTime, recentVideosData, recentActivity: recentActivityData.recentActivity || [] })
+        setDashboardData({ dashboardStats, featuredContent, userEnrollments, userPoints, upcomingLessons, learningTime, recentVideosData })
         
         // Load user permissions
         const userPermissions = await getUserPermissions(user)
@@ -108,7 +100,7 @@ function DashboardContent() {
     )
   }
   
-  const { dashboardStats, featuredContent, userEnrollments, userPoints, upcomingLessons, learningTime, recentVideosData, recentActivity } = dashboardData
+  const { dashboardStats, featuredContent, userEnrollments, userPoints, upcomingLessons, learningTime, recentVideosData } = dashboardData
   
 
 
@@ -155,7 +147,7 @@ function DashboardContent() {
               <p className="text-gray-300">Ready to continue your equestrian journey?</p>
             </div>
             <div className="hidden md:block">
-              <LargeRealtimeClock className="h-24 w-24 text-teal/50" />
+              <TrendingUp className="h-16 w-16 text-teal/50" />
             </div>
           </div>
         </div>
@@ -211,7 +203,7 @@ function DashboardContent() {
         <div className="lg:col-span-2 space-y-6">
           <div className="flex items-center justify-between continue-watching">
             <h2 className="text-xl font-semibold text-white">Continue Watching</h2>
-            <Button variant="outline" size="sm" asChild className="border-teal-400 text-teal-400 bg-teal-400/10 hover:bg-teal-400/20 hover:text-white hover:border-white transition-all duration-200">
+            <Button variant="ghost" asChild className="text-teal hover:text-teal/80">
               <Link href="/dashboard/videos">
                 View All <ChevronRight className="w-4 h-4 ml-1" />
               </Link>
@@ -220,7 +212,7 @@ function DashboardContent() {
 
           <div className="space-y-4">
             {recentVideos.length > 0 ? (
-              recentVideos.map((video) => (
+              recentVideos.map((video: VideoWithProgress) => (
                 <Card key={video.id} className="relative overflow-hidden border-gray-800 hover:border-gray-700 transition-colors group">
                   <Link href={`/dashboard/videos/${video.id}`} className="block">
                     {/* Background Image */}
@@ -280,78 +272,6 @@ function DashboardContent() {
                 </CardContent>
               </Card>
             )}
-          </div>
-          
-          {/* Recent Activity */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-white">Recent Activity</h2>
-              <Button variant="outline" size="sm" asChild className="border-teal-400/50 text-teal-400 bg-teal-400/5 hover:bg-teal-400/10 hover:text-white hover:border-white transition-all duration-200">
-                <Link href="/dashboard/profile#activity">
-                  View All <ChevronRight className="w-4 h-4 ml-1" />
-                </Link>
-              </Button>
-            </div>
-            
-            <Card className="bg-gradient-to-br from-gray-900/90 to-gray-800/50 border-gray-800/50 backdrop-blur-sm">
-              <CardContent className="p-6">
-                {recentActivity && recentActivity.length > 0 ? (
-                  <div className="space-y-4">
-                    {recentActivity.slice(0, 4).map((activity: any) => (
-                      <div key={activity.id} className="flex items-start gap-4 p-4 rounded-lg bg-gray-800/30 hover:bg-gray-800/50 transition-colors group">
-                        <div className={`w-3 h-3 rounded-full mt-2 flex-shrink-0 shadow-lg ${
-                          activity.type === 'video_completed' ? 'bg-teal-400 shadow-teal-400/30' :
-                          activity.type === 'program_started' ? 'bg-blue-400 shadow-blue-400/30' :
-                          activity.type === 'achievement_earned' ? 'bg-yellow-400 shadow-yellow-400/30' :
-                          activity.type === 'lesson_joined' ? 'bg-green-400 shadow-green-400/30' :
-                          'bg-gray-400 shadow-gray-400/30'
-                        }`} />
-                        <div className="flex-1 space-y-1">
-                          <p className={`text-white font-medium transition-colors ${
-                            activity.type === 'video_completed' ? 'group-hover:text-teal-300' :
-                            activity.type === 'program_started' ? 'group-hover:text-blue-300' :
-                            activity.type === 'achievement_earned' ? 'group-hover:text-yellow-300' :
-                            activity.type === 'lesson_joined' ? 'group-hover:text-green-300' :
-                            'group-hover:text-gray-300'
-                          }`}>
-                            {activity.title}
-                          </p>
-                          <p className="text-sm text-gray-400">
-                            {activity.type === 'video_completed' ? 'Video' :
-                             activity.type === 'program_started' ? 'Program' :
-                             activity.type === 'achievement_earned' ? 'Achievement' :
-                             activity.type === 'lesson_joined' ? 'Live Session' :
-                             'Activity'} • {activity.date}
-                          </p>
-                        </div>
-                        <div className={`text-xs px-2 py-1 rounded-full ${
-                          activity.type === 'video_completed' ? 'text-teal-400 bg-teal-400/10' :
-                          activity.type === 'program_started' ? 'text-blue-400 bg-blue-400/10' :
-                          activity.type === 'achievement_earned' ? 'text-yellow-400 bg-yellow-400/10' :
-                          activity.type === 'lesson_joined' ? 'text-green-400 bg-green-400/10' :
-                          'text-gray-400 bg-gray-400/10'
-                        }`}>
-                          {activity.type === 'video_completed' ? '+50 XP' :
-                           activity.type === 'program_started' ? 'New' :
-                           activity.type === 'achievement_earned' ? '🏆' :
-                           activity.type === 'lesson_joined' ? 'Live' :
-                           'New'}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <BarChart3 className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-                    <h4 className="font-medium text-white mb-2">No Recent Activity</h4>
-                    <p className="text-sm text-gray-400 mb-4">Start learning to see your activity here</p>
-                    <Button asChild className="bg-teal-500 hover:bg-teal-600">
-                      <Link href="/dashboard/videos">Browse Videos</Link>
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
           </div>
         </div>
 

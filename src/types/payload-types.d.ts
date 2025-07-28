@@ -1,6 +1,6 @@
-import { PayloadRequest } from 'payload/types'
+import { PayloadRequest } from 'payload'
 
-declare module 'payload/types' {
+declare module 'payload' {
   interface PayloadRequest {
     tenant?: {
       slug?: string

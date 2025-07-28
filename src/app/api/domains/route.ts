@@ -15,7 +15,9 @@ export async function GET(request: NextRequest) {
     
     console.log(`Found ${domains.docs.length} domain mappings:`)
     domains.docs.forEach(domain => {
-      console.log(`- ${domain.domain} -> Tenant: ${domain.tenant?.name || domain.tenant} (ID: ${domain.tenant?.id || domain.tenant})`)
+      const tenantName = typeof domain.tenant === 'object' && domain.tenant !== null ? domain.tenant.name : domain.tenant
+      const tenantId = typeof domain.tenant === 'object' && domain.tenant !== null ? domain.tenant.id : domain.tenant
+      console.log(`- ${domain.domain} -> Tenant: ${tenantName} (ID: ${tenantId})`)
     })
     
     return Response.json(domains)

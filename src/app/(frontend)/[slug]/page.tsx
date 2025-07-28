@@ -5,19 +5,21 @@ import configPromise from '@payload-config'
 import { getPayload, type RequiredDataFromCollectionSlug } from 'payload'
 import { draftMode, headers } from 'next/headers'
 import React, { cache } from 'react'
-import { home as homeStatic } from '@/endpoints/seed/home-static'
+
 
 import { RenderBlocks } from '@/blocks/RenderBlocks'
 import { RenderHero } from '@/heros/RenderHero'
 import { generateMeta } from '@/utilities/generateMeta'
 import { getTenantByDomain } from '@/utilities/getTenantByDomain'
 import { getDomainInfo } from '@/utilities/getDomainInfo'
-import PageClient from './page.client'
+// Client component removed to avoid Vercel manifest issues
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import CustomHomepage from '../_components/CustomHomepage'
 import { notFound } from 'next/navigation'
+import { withSafeStaticGeneration } from '../../../utils/buildStaticGeneration'
 
-export async function generateStaticParams() {
+// Original function wrapped with safety utility to skip DB access during build
+const originalGenerateStaticParams = async () => {
   const payload = await getPayload({ config: configPromise })
   const pages = await payload.find({
     collection: 'pages',
@@ -40,6 +42,9 @@ export async function generateStaticParams() {
 
   return params
 }
+
+// Export the safe version that won't try to connect during build
+export const generateStaticParams = withSafeStaticGeneration(originalGenerateStaticParams)
 
 type Args = {
   params: Promise<{
@@ -119,10 +124,7 @@ export default async function Page({ params: paramsPromise }: Args) {
     tenantId: tenant?.id,
   })
 
-  // Remove this code once your website is seeded
-  if (!page && slug === 'home') {
-    page = homeStatic
-  }
+
 
   if (!page) {
     return <PayloadRedirects url={url} />
@@ -132,7 +134,6 @@ export default async function Page({ params: paramsPromise }: Args) {
 
   return (
     <article className="pt-16 pb-24">
-      <PageClient />
       {/* Allows redirects for valid pages too */}
       <PayloadRedirects disableNotFound url={url} />
 

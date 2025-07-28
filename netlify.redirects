@@ -1,0 +1,11 @@
+# Netlify redirects file
+# Ensure all routes are properly handled, especially custom pages
+
+# Custom page routes
+/about              /.netlify/functions/___netlify-handler    200
+/services           /.netlify/functions/___netlify-handler    200
+/pricing            /.netlify/functions/___netlify-handler    200
+/contact            /.netlify/functions/___netlify-handler    200
+
+# Catch-all rule for remaining routes
+/*                  /.netlify/functions/___netlify-handler    200

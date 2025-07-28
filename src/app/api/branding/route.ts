@@ -171,7 +171,7 @@ export async function POST(request: Request) {
       // If admin endpoint works, use that (this is what the admin UI expects)
       if (existingBranding && existingBranding.id) {
         // Try to update via admin endpoint
-        const result = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/collections/branding/${existingBranding.id}`, {
+        const result = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/collections/_branding_/${existingBranding.id}`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
@@ -193,7 +193,7 @@ export async function POST(request: Request) {
       // Update existing document
       try {
         const result = await payload.update({
-          collection: 'branding',
+          collection: '_branding_',
           id: existingBranding.id,
           data: body,
           depth: parseInt(depth as string, 10),
@@ -206,7 +206,7 @@ export async function POST(request: Request) {
           // Using type assertion to bypass TypeScript collection name validation
           // This allows us to try alternative collection names that might work at runtime
           const result = await payload.update({
-            collection: 'branding' as any, // Try with type assertion instead of literal name
+            collection: '_branding_' as any, // Try with type assertion instead of literal name
             id: existingBranding.id,
             data: body,
             depth: parseInt(depth as string, 10),
@@ -286,7 +286,7 @@ export async function PUT(request: Request) {
       if (existingBranding && existingBranding.id) {
         // Update the existing document
         const result = await payload.update({
-          collection: 'branding',
+          collection: '_branding_' as any,
           id: existingBranding.id,
           data: body,
           depth: parseInt(depth as string, 10),

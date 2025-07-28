@@ -1,8 +1,8 @@
 'use client'
 
 import React from 'react'
-import { Events as EventsComponent } from '../../components/Events'
-import { Block } from 'payload/types'
+import { Events as EventsComponent, EventType } from '../../components/Events'
+import { Block } from 'payload'
 
 type EventsBlockType = {
   title: string
@@ -40,12 +40,15 @@ export const EventsBlock: React.FC<{
     const id = event.id || `event-${index}`
 
     // Adapt image data
-    let imageData = null
+    let imageData: EventType['image'] = undefined
     if (event.image) {
       // Handle both string IDs and object references
       if (typeof event.image === 'string') {
         imageData = {
           id: event.image,
+          url: '', // Required fields
+          updatedAt: '',
+          createdAt: '',
         }
       } else {
         imageData = {
@@ -67,18 +70,25 @@ export const EventsBlock: React.FC<{
       endDate: event.endDate || undefined,
       location: event.location || 'TBD',
       image: imageData,
-      eventType: 'other', // Default since config doesn't have eventType
+      eventType: 'other' as const, // Cast to literal type to match EventType
       registrationUrl: event.link?.url,
       price: '', // Not in block config
     }
   })
 
+  // Ensure all events strictly conform to the EventType interface
+  const typeSafeEvents: EventType[] = adaptedEvents.map(event => ({
+    ...event,
+    // Ensure image is never null, only undefined or the correct object type
+    image: event.image || undefined
+  }))
+
   return (
     <EventsComponent
       title={title}
       description={description?.root?.children?.[0]?.children?.[0]?.text || description}
-      events={adaptedEvents}
-      viewType={displayStyle === 'grid' ? 'list' : displayStyle}
+      events={typeSafeEvents}
+      viewType={displayStyle === 'grid' ? 'list' : displayStyle}     
     />
   )
 }

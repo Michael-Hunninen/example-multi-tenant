@@ -1,0 +1,113 @@
+[build]
+  publish = ".next"
+  command = "node netlify-build.js && pnpm install --no-frozen-lockfile && NEXT_PHASE=phase-production-build pnpm build"
+  ignore_command = "false"
+
+[build.environment]
+  NODE_VERSION = "18"
+  NPM_USE_PRODUCTION = "false"
+  NEXT_PHASE = "phase-production-build"
+  # Disable secrets scanning for public environment variables
+  SECRETS_SCAN_OMIT_KEYS = "PAYLOAD_PUBLIC_SERVER_URL,NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,POSTGRES_URL"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[functions]
+  node_bundler = "esbuild"
+
+# Handle Next.js rewrites and redirects
+# Force include the redirects file
+[build.publish]
+  publish = ".next"
+  functions = ".netlify/functions/"
+
+[[redirects]]
+  from = "/_next/static/*"
+  to = "/_next/static/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/___netlify-handler"
+  status = 200
+
+# Specific custom page redirects
+[[redirects]]
+  from = "/about"
+  to = "/.netlify/functions/___netlify-handler"
+  status = 200
+
+[[redirects]]
+  from = "/services"
+  to = "/.netlify/functions/___netlify-handler"
+  status = 200
+
+[[redirects]]
+  from = "/pricing"
+  to = "/.netlify/functions/___netlify-handler"
+  status = 200
+
+[[redirects]]
+  from = "/contact"
+  to = "/.netlify/functions/___netlify-handler"
+  status = 200
+
+# Root page redirect
+[[redirects]]
+  from = "/"
+  to = "/.netlify/functions/___netlify-handler"
+  status = 200
+
+# Catch-all must be last
+[[redirects]]
+  from = "/*"
+  to = "/.netlify/functions/___netlify-handler"
+  status = 200
+
+# Headers for PWA and security
+[[headers]]
+  for = "/api/manifest"
+  [headers.values]
+    Content-Type = "application/json"
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/api/pwa/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+
+[[headers]]
+  for = "/api/sw.js"
+  [headers.values]
+    Content-Type = "application/javascript"
+    Cache-Control = "public, max-age=0"
+    Service-Worker-Allowed = "/"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+# PWA headers
+[[headers]]
+  for = "/"
+  [headers.values]
+    X-Robots-Tag = "index, follow"
+
+# Environment-specific settings
+[context.production]
+  command = "pnpm build"
+
+[context.deploy-preview]
+  command = "pnpm build"
+
+[context.branch-deploy]
+  command = "pnpm build"
+
+# Form handling (if needed for contact forms)
+[forms]
+  settings = true

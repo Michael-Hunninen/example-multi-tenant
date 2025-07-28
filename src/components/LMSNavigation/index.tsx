@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import React, { useState } from 'react'
 import Link from 'next/link'
@@ -102,7 +102,7 @@ export const LMSNavigation: React.FC = () => {
                 <div className="absolute right-0 mt-2 w-48 bg-gray-900 border border-gray-700 rounded-md shadow-lg py-1">
                   <div className="px-4 py-2 border-b border-gray-700">
                     <p className="text-sm text-gray-300">{user?.name || 'Student'}</p>
-                    <p className="text-xs text-gray-500 capitalize">{user?.role || 'basic'} Member</p>
+                    <p className="text-xs text-gray-500 capitalize">{user?.roles?.[0] || 'basic'} Member</p>
                   </div>
                   {userMenuItems.map((item) => {
                     const IconComponent = item.icon
@@ -180,7 +180,7 @@ export const LMSNavigation: React.FC = () => {
                 <div className="space-y-2">
                   <div className="px-3 py-2">
                     <p className="text-sm text-gray-300">{user?.name || 'Student'}</p>
-                    <p className="text-xs text-gray-500 capitalize">{user?.role || 'basic'} Member</p>
+                    <p className="text-xs text-gray-500 capitalize">{user?.roles?.[0] || 'basic'} Member</p>
                   </div>
                   {userMenuItems.map((item) => {
                     const IconComponent = item.icon

@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Link from "next/link"
 import Image from "next/image"
-import { BookOpen, Clock, Users, Star, Play, ChevronRight, Trophy, Target, Calendar } from "lucide-react"
+import { BookOpen, Clock, Users, Star, Play, ChevronRight, Trophy, Target, Calendar, User } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useAuth } from '@/components/LMSAuth/AuthWrapper'
 import AccessControlWrapper from '@/components/AccessControlWrapper'

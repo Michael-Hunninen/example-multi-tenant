@@ -40,18 +40,9 @@ const walkthroughSteps: WalkthroughStep[] = [
     icon: Trophy
   },
   {
-    id: 'welcome-card',
-    title: 'Your Personal Welcome & Live Clock',
-    description: 'See your personalized welcome message and live time clock. Notice how the time updates in real-time - this shows you\'re in an active learning session!',
-    target: '.dashboard-overview > div:first-child',
-    position: 'bottom',
-    icon: User,
-    action: 'Watch the clock tick!'
-  },
-  {
     id: 'stats',
     title: 'Track Your Progress',
-    description: 'Monitor your training statistics, completed programs, total learning time, and points earned. Your dedication shows here!',
+    description: 'Monitor your training statistics, completed lessons, and skill improvements. Your dedication shows here!',
     target: '.stats-section',
     position: 'bottom',
     icon: BarChart3
@@ -59,44 +50,26 @@ const walkthroughSteps: WalkthroughStep[] = [
   {
     id: 'continue-watching',
     title: 'Continue Where You Left Off',
-    description: 'Never lose your place! Your recently watched videos and progress are saved automatically. Click "View All" to see your full video library.',
+    description: 'Never lose your place! Your recently watched videos and progress are saved automatically.',
     target: '.continue-watching',
     position: 'top',
     icon: Play
   },
   {
-    id: 'recent-activity',
-    title: 'Your Recent Activity Feed',
-    description: 'Stay updated with your latest learning activities - completed videos, started programs, earned achievements, and attended live sessions.',
-    target: '.continue-watching + div',
-    position: 'top',
-    icon: BarChart3,
-    action: 'Real-time activity updates'
-  },
-  {
-    id: 'sidebar-navigation',
-    title: 'Your Learning Navigation',
-    description: 'This sidebar is your control center! Each tab takes you to different parts of your training journey. Let\'s explore what each one does.',
-    target: 'nav.flex-1',
-    position: 'right',
-    icon: BookOpen,
-    action: 'Your learning command center'
-  },
-  {
     id: 'video-library',
     title: 'Explore the Video Library',
     description: 'Access hundreds of professional training videos. Use the search and filters to find exactly what you need.',
-    target: 'a[href="/dashboard/videos"]',
-    position: 'right',
+    target: '[href="/dashboard/videos"]',
+    position: 'left',
     icon: BookOpen,
     action: 'Click to explore videos'
   },
   {
     id: 'programs',
     title: 'Follow Structured Programs',
-    description: 'Join comprehensive training programs designed by professionals. Each program builds skills progressively.',
-    target: 'a[href="/dashboard/programs"]',
-    position: 'right',
+    description: 'Join comprehensive training programs designed by Josiane Gauthier. Each program builds skills progressively.',
+    target: '[href="/dashboard/programs"]',
+    position: 'left',
     icon: Trophy,
     action: 'View available programs'
   },
@@ -104,55 +77,27 @@ const walkthroughSteps: WalkthroughStep[] = [
     id: 'live-sessions',
     title: 'Join Live Training Sessions',
     description: 'Participate in weekly Q&A sessions, get personalized feedback, and connect with other riders.',
-    target: 'a[href="/dashboard/lessons"]',
-    position: 'right',
+    target: '[href="/dashboard/lessons"]',
+    position: 'left',
     icon: Calendar,
     action: 'See upcoming sessions'
   },
   {
     id: 'profile',
     title: 'Manage Your Profile',
-    description: 'Update your goals, track achievements, view detailed learning stats, and customize your preferences.',
-    target: 'a[href="/dashboard/profile"]',
+    description: 'Update your goals, track achievements, and customize your learning preferences.',
+    target: '[href="/dashboard/profile"]',
     position: 'right',
     icon: User,
     action: 'Visit your profile'
   },
   {
-    id: 'settings',
-    title: 'Customize Your Settings',
-    description: 'Adjust your account preferences, notification settings, and learning customizations.',
-    target: 'a[href="/dashboard/settings"]',
-    position: 'right',
-    icon: Settings,
-    action: 'Configure settings'
-  },
-  {
-    id: 'tutorial',
-    title: 'Tutorial On-Demand',
-    description: 'Forgot how something works? No problem! Click the Tutorial tab anytime to restart this guided tour. Learning should never feel overwhelming.',
-    target: 'nav button[class*="w-full"]:last-of-type',
-    position: 'right',
-    icon: Trophy,
-    action: 'Always here to help'
-  },
-  {
     id: 'search',
-    title: 'Instant Search',
-    description: 'Need to find something specific? Use this search bar to instantly locate any video, program, or training topic. Try searching for "reining" or "basics"!',
-    target: 'input[placeholder*="Search"]',
+    title: 'Quick Search',
+    description: 'Find any video, program, or topic instantly with our powerful search feature.',
+    target: '.search-input',
     position: 'bottom',
-    icon: Search,
-    action: 'Try it now!'
-  },
-  {
-    id: 'notifications',
-    title: 'Stay Updated with Notifications',
-    description: 'Check your notifications for new content, achievement unlocks, upcoming sessions, and important updates.',
-    target: 'header div:last-child button:first-child',
-    position: 'bottom',
-    icon: Award,
-    action: 'Click to view notifications'
+    icon: Search
   }
 ]
 
@@ -171,119 +116,53 @@ export default function DashboardWalkthrough({ onComplete, onSkip }: DashboardWa
 
   useEffect(() => {
     const highlightElement = () => {
-      // Try multiple selector strategies for better accuracy
-      let element = document.querySelector(currentStepData.target)
-      
-      // Fallback selectors for common elements
-      if (!element) {
-        const fallbacks: Record<string, string> = {
-          'nav.flex-1': 'nav[class*="flex-1"], nav[class*="overflow-y-auto"]',
-          'input[placeholder*="Search"]': 'input[placeholder*="search"], input[placeholder*="videos"]',
-          'nav button[class*="w-full"]:last-of-type': 'nav button:last-of-type, button[class*="Tutorial"]',
-          'header div:last-child button:first-child': 'header button:first-of-type, button[aria-label*="notification"]',
-          '.continue-watching + div': '.continue-watching ~ div, [class*="recent-activity"], [class*="activity-feed"]'
-        }
-        
-        const fallbackSelector = fallbacks[currentStepData.target]
-        if (fallbackSelector) {
-          element = document.querySelector(fallbackSelector)
-        }
-      }
-      
+      const element = document.querySelector(currentStepData.target)
       if (element) {
         setHighlightedElement(element)
         
-        // Calculate tooltip position with better accuracy
+        // Calculate tooltip position
         const rect = element.getBoundingClientRect()
         const scrollY = window.scrollY
         const scrollX = window.scrollX
-        const viewportWidth = window.innerWidth
-        const viewportHeight = window.innerHeight
         
-        // Base position calculation
         let x = rect.left + scrollX + rect.width / 2
         let y = rect.top + scrollY
         
-        // Tooltip dimensions estimate (for boundary checking)
-        const tooltipWidth = 320
-        const tooltipHeight = 200
-        const padding = 20
-        
         switch (currentStepData.position) {
           case 'top':
-            y = rect.top + scrollY - tooltipHeight - padding
-            // Ensure tooltip stays within viewport horizontally
-            x = Math.max(padding, Math.min(x, viewportWidth - tooltipWidth - padding))
+            y = rect.top + scrollY - 20
             break
           case 'bottom':
-            y = rect.bottom + scrollY + padding
-            x = Math.max(padding, Math.min(x, viewportWidth - tooltipWidth - padding))
+            y = rect.bottom + scrollY + 20
             break
           case 'left':
-            x = rect.left + scrollX - tooltipWidth - padding
-            y = rect.top + scrollY + rect.height / 2 - tooltipHeight / 2
-            // Ensure tooltip stays within viewport
-            y = Math.max(padding, Math.min(y, viewportHeight - tooltipHeight - padding))
+            x = rect.left + scrollX - 20
+            y = rect.top + scrollY + rect.height / 2
             break
           case 'right':
-            x = rect.right + scrollX + padding
-            y = rect.top + scrollY + rect.height / 2 - tooltipHeight / 2
-            y = Math.max(padding, Math.min(y, viewportHeight - tooltipHeight - padding))
+            x = rect.right + scrollX + 20
+            y = rect.top + scrollY + rect.height / 2
             break
           case 'center':
-            x = viewportWidth / 2 - tooltipWidth / 2
-            y = viewportHeight / 2 - tooltipHeight / 2 + scrollY
+            x = window.innerWidth / 2
+            y = window.innerHeight / 2
             break
         }
         
         setTooltipPosition({ x, y })
         
-        // Scroll element into view with better positioning
-        const elementTop = rect.top + scrollY
-        const elementBottom = rect.bottom + scrollY
-        const viewportTop = scrollY
-        const viewportBottom = scrollY + viewportHeight
-        
-        // Only scroll if element is not fully visible
-        if (elementTop < viewportTop || elementBottom > viewportBottom) {
-          element.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'center',
-            inline: 'nearest'
-          })
-        }
-        
-        // Add extra highlight styling
-        element.classList.add('walkthrough-highlight')
-      } else {
-        console.warn(`Element not found for target: ${currentStepData.target}`)
-        // Fallback to center position if element not found
-        const viewportWidth = window.innerWidth
-        const viewportHeight = window.innerHeight
-        const scrollY = window.scrollY
-        setTooltipPosition({ 
-          x: viewportWidth / 2 - 160, 
-          y: viewportHeight / 2 - 100 + scrollY 
+        // Scroll element into view
+        element.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center',
+          inline: 'center'
         })
       }
     }
-    
-    // Clean up previous highlight
-    const prevHighlighted = document.querySelector('.walkthrough-highlight')
-    if (prevHighlighted) {
-      prevHighlighted.classList.remove('walkthrough-highlight')
-    }
-    
-    // Delay to ensure DOM is ready and animations complete
-    const timer = setTimeout(highlightElement, 600)
-    return () => {
-      clearTimeout(timer)
-      // Clean up highlight on unmount
-      const highlighted = document.querySelector('.walkthrough-highlight')
-      if (highlighted) {
-        highlighted.classList.remove('walkthrough-highlight')
-      }
-    }
+
+    // Delay to ensure DOM is ready
+    const timer = setTimeout(highlightElement, 100)
+    return () => clearTimeout(timer)
   }, [currentStep, currentStepData])
 
   const handleNext = () => {

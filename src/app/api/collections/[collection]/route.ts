@@ -3,12 +3,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 
-type CollectionParams = { params: { collection: string } }
-
-export async function GET(req: NextRequest, { params }: CollectionParams) {
-  // Ensure params is properly awaited
-  const resolvedParams = await Promise.resolve(params);
-  const collection = resolvedParams.collection
+export async function GET(req: NextRequest, context: { params: Promise<{ collection: string }> }) {
+  const params = await context.params;
+  const { collection } = params;
   
   try {
     const searchParams = req.nextUrl.searchParams

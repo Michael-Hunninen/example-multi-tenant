@@ -1,4 +1,4 @@
-import { Access } from 'payload/types'
+import { Access } from 'payload'
 
 // Check if the user has admin access
 export const isAdmin: Access = ({ req: { user } }) => {
@@ -9,7 +9,7 @@ export const isAdmin: Access = ({ req: { user } }) => {
   if (user?.roles?.includes('admin') || user?.roles?.includes('super-admin')) return true
 
   // Check if user has admin role in any tenant
-  if (user?.tenants?.some(tenant => tenant?.roles?.includes('admin'))) return true
+  if (user?.tenants?.some(tenant => tenant?.roles?.includes('tenant-admin'))) return true
 
   // Otherwise deny access
   return false
