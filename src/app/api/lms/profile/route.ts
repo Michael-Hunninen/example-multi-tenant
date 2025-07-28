@@ -54,7 +54,10 @@ export async function GET(request: NextRequest) {
       totalWatchTime: Math.round(videoProgress.docs.reduce((total, vp) => total + (vp.watchTime || 0), 0) / 3600 * 10) / 10, // Convert to hours
       currentStreak: 7, // Mock for now - would need streak calculation logic
       achievements: userAchievements.docs.length,
-      points: userAchievements.docs.reduce((total, ua) => total + (ua.achievement?.points || 0), 0)
+      points: userAchievements.docs.reduce((total, ua) => {
+        const achievementPoints = typeof ua.achievement === 'object' && ua.achievement !== null ? ua.achievement.points || 0 : 0
+        return total + achievementPoints
+      }, 0)
     }
     
     // Get recent activity (last 10 video progress updates and enrollments)
@@ -76,21 +79,32 @@ export async function GET(request: NextRequest) {
     
     // Transform recent activity
     const recentActivity = [
-      ...recentVideoProgress.docs.map(vp => ({
-        id: vp.id,
-        type: vp.completed ? 'video_completed' : 'video_progress',
-        title: vp.completed ? `Completed '${vp.video?.title}'` : `Watched '${vp.video?.title}'`,
-        date: new Date(vp.lastWatchedAt).toLocaleDateString(),
-        timestamp: vp.lastWatchedAt
-      })),
-      ...recentEnrollments.docs.map(enrollment => ({
-        id: enrollment.id,
-        type: enrollment.status === 'completed' ? 'program_completed' : 'program_started',
-        title: enrollment.status === 'completed' ? `Completed '${enrollment.program?.title}'` : `Started '${enrollment.program?.title}'`,
-        date: new Date(enrollment.enrolledAt).toLocaleDateString(),
-        timestamp: enrollment.enrolledAt
-      }))
+      ...recentVideoProgress.docs.map(vp => {
+        const videoTitle = typeof vp.video === 'object' && vp.video !== null ? vp.video.title || 'Video' : 'Video'
+        const safeLastWatchedAt = vp.lastWatchedAt || new Date().toISOString()
+        return {
+          id: vp.id,
+          type: vp.completed ? 'video_completed' : 'video_progress',
+          title: vp.completed ? `Completed '${videoTitle}'` : `Watched '${videoTitle}'`,
+          date: new Date(safeLastWatchedAt).toLocaleDateString(),
+          timestamp: safeLastWatchedAt
+        }
+      }),
+      ...recentEnrollments.docs.map(enrollment => {
+        const programTitle = typeof enrollment.program === 'object' && enrollment.program !== null ? enrollment.program.title || 'Program' : 'Program'
+        const safeEnrolledAt = enrollment.enrolledAt || new Date().toISOString()
+        return {
+          id: enrollment.id,
+          type: enrollment.status === 'completed' ? 'program_completed' : 'program_started',
+          title: enrollment.status === 'completed' ? `Completed '${programTitle}'` : `Started '${programTitle}'`,
+          date: new Date(safeEnrolledAt).toLocaleDateString(),
+          timestamp: safeEnrolledAt
+        }
+      })
     ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 10)
+    
+    // Type-safe handling of user avatar (may not exist in the User type)  
+    const userAvatar = (user as any).avatar?.url || null
     
     const profileData = {
       id: user.id,
@@ -99,19 +113,22 @@ export async function GET(request: NextRequest) {
       phone: '', // User schema doesn't have phone field
       location: '', // User schema doesn't have location field
       bio: '', // User schema doesn't have bio field
-      avatar: user.avatar?.url || null,
+      avatar: userAvatar,
       joinDate: user.createdAt,
       role: user.roles?.includes('business') ? 'Business Member' : 
             user.roles?.includes('admin') ? 'Admin Member' : 
             user.roles?.includes('super-admin') ? 'Super Admin' : 'Regular Member',
       stats,
-      achievements: userAchievements.docs.map(ua => ({
-        id: ua.id,
-        title: ua.achievement?.title || 'Achievement',
-        description: ua.achievement?.description || '',
-        icon: ua.achievement?.icon || '🏆',
-        earnedDate: ua.earnedAt
-      })),
+      achievements: userAchievements.docs.map(ua => {
+        const achievement = typeof ua.achievement === 'object' && ua.achievement !== null ? ua.achievement : null
+        return {
+          id: ua.id,
+          title: achievement?.title || 'Achievement',
+          description: achievement?.description || '',
+          icon: achievement?.icon || '🏆',
+          earnedDate: ua.earnedAt
+        }
+      }),
       recentActivity
     }
     

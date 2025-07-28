@@ -24,6 +24,8 @@ import { AuthGuard, useAuth, AuthProvider } from '@/components/LMSAuth/AuthWrapp
 import { useBranding } from '@/hooks/useBranding'
 import GenericDashboardLayout from '../_components/GenericDashboardLayout'
 import TenantAccessGuard from '../_components/TenantAccessGuard'
+import PWAMetadata from '@/components/PWAMetadata'
+import Head from 'next/head'
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -106,6 +108,11 @@ function DashboardContent({ children }: DashboardContentProps) {
 
   return (
     <div className="min-h-screen bg-gray-950 overflow-x-hidden">
+      <PWAMetadata 
+        tenantName={branding?.name || undefined}
+        tenantDescription={undefined}
+        themeColor="#14b8a6"
+      />
       {/* Desktop Sidebar */}
       <div className={cn(
         "hidden md:flex flex-col bg-gray-900/95 backdrop-blur-sm border-r border-gray-800/50 fixed top-0 left-0 bottom-0 z-10 transition-all duration-300 ease-in-out",
@@ -162,7 +169,7 @@ function DashboardContent({ children }: DashboardContentProps) {
                 "w-full transition-all duration-200 hover:bg-gray-800/50",
                 sidebarCollapsed ? "justify-center px-2" : "justify-start px-3",
                 pathname === "/dashboard" 
-                  ? 'text-teal-400 bg-teal-500/10 border-r-2 border-teal-400 hover:text-white' 
+                  ? 'text-teal-400 bg-teal-500/10 border-r-2 border-teal-400' 
                   : 'text-gray-300 hover:text-white'
               )}
             >
@@ -181,7 +188,7 @@ function DashboardContent({ children }: DashboardContentProps) {
                 "w-full transition-all duration-200 hover:bg-gray-800/50",
                 sidebarCollapsed ? "justify-center px-2" : "justify-start px-3",
                 pathname.startsWith("/dashboard/videos") 
-                  ? 'text-teal-400 bg-teal-500/10 border-r-2 border-teal-400 hover:text-white' 
+                  ? 'text-teal-400 bg-teal-500/10 border-r-2 border-teal-400' 
                   : 'text-gray-300 hover:text-white'
               )}
             >
@@ -200,7 +207,7 @@ function DashboardContent({ children }: DashboardContentProps) {
                 "w-full transition-all duration-200 hover:bg-gray-800/50",
                 sidebarCollapsed ? "justify-center px-2" : "justify-start px-3",
                 pathname.startsWith("/dashboard/programs") 
-                  ? 'text-teal-400 bg-teal-500/10 border-r-2 border-teal-400 hover:text-white' 
+                  ? 'text-teal-400 bg-teal-500/10 border-r-2 border-teal-400' 
                   : 'text-gray-300 hover:text-white'
               )}
             >
@@ -219,7 +226,7 @@ function DashboardContent({ children }: DashboardContentProps) {
                 "w-full transition-all duration-200 hover:bg-gray-800/50",
                 sidebarCollapsed ? "justify-center px-2" : "justify-start px-3",
                 pathname.startsWith("/dashboard/lessons") 
-                  ? 'text-teal-400 bg-teal-500/10 border-r-2 border-teal-400 hover:text-white' 
+                  ? 'text-teal-400 bg-teal-500/10 border-r-2 border-teal-400' 
                   : 'text-gray-300 hover:text-white'
               )}
             >
@@ -243,7 +250,7 @@ function DashboardContent({ children }: DashboardContentProps) {
                 "w-full transition-all duration-200 hover:bg-gray-800/50",
                 sidebarCollapsed ? "justify-center px-2" : "justify-start px-3",
                 pathname.startsWith("/dashboard/profile") 
-                  ? 'text-teal-400 bg-teal-500/10 border-r-2 border-teal-400 hover:text-white' 
+                  ? 'text-teal-400 bg-teal-500/10 border-r-2 border-teal-400' 
                   : 'text-gray-300 hover:text-white'
               )}
             >
@@ -259,7 +266,7 @@ function DashboardContent({ children }: DashboardContentProps) {
                 "w-full transition-all duration-200 hover:bg-gray-800/50",
                 sidebarCollapsed ? "justify-center px-2" : "justify-start px-3",
                 pathname.startsWith("/dashboard/settings") 
-                  ? 'text-teal-400 bg-teal-500/10 border-r-2 border-teal-400 hover:text-white' 
+                  ? 'text-teal-400 bg-teal-500/10 border-r-2 border-teal-400' 
                   : 'text-gray-300 hover:text-white'
               )}
             >
@@ -267,28 +274,6 @@ function DashboardContent({ children }: DashboardContentProps) {
                 <Settings className="w-5 h-5 flex-shrink-0" />
                 {!sidebarCollapsed && <span className="font-medium">Settings</span>}
               </Link>
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                // Trigger the walkthrough by dispatching a custom event
-                window.dispatchEvent(new CustomEvent('startTutorial'))
-              }}
-              className={cn(
-                "w-full transition-all duration-200 hover:bg-gray-800/50",
-                sidebarCollapsed ? "justify-center px-2" : "justify-start px-3",
-                'text-gray-300 hover:text-white'
-              )}
-            >
-              <div className="flex items-center gap-3">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 flex-shrink-0">
-                  <circle cx="12" cy="12" r="3"/>
-                  <path d="M12 1v6m0 6v6"/>
-                  <path d="m15.14 8.86 4.24-4.24m-4.24 10.76 4.24 4.24"/>
-                  <path d="m8.86 8.86-4.24-4.24m4.24 10.76-4.24 4.24"/>
-                </svg>
-                {!sidebarCollapsed && <span className="font-medium">Tutorial</span>}
-              </div>
             </Button>
             {/* Admin-only section */}
             {user.roles && (user.roles.includes('admin') || user.roles.includes('super-admin')) && (
@@ -426,17 +411,7 @@ function DashboardContent({ children }: DashboardContentProps) {
                     </DropdownMenuItem>
                   </DropdownMenuGroup>
                   <DropdownMenuSeparator className="bg-gray-800/50" />
-                  <DropdownMenuItem asChild>
-                    <Link href="/" className="cursor-pointer hover:bg-gray-800/50 transition-colors">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-4 w-4">
-                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                        <polyline points="9 22 9 12 15 12 15 22" />
-                      </svg>
-                      <span>View Site</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator className="bg-gray-800/50" />
-                  <DropdownMenuItem onClick={handleSignOut} className="text-red-300 hover:text-white hover:bg-red-500/10 transition-colors cursor-pointer">
+                  <DropdownMenuItem onClick={handleSignOut} className="text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer">
                     Sign Out
                   </DropdownMenuItem>
                 </DropdownMenuContent>

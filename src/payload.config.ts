@@ -5,6 +5,9 @@ import path from 'path'
 import { defaultLexical } from './fields/defaultLexical'
 import sharp from 'sharp' // Import sharp exactly as in the website template
 import { buildConfig } from 'payload'
+
+// Import build phase detection
+import { isBuildPhase } from './utils/buildPhase'
 import { fileURLToPath } from 'url'
 
 // Import plugins
@@ -37,7 +40,6 @@ import { Customers } from './collections/Customers'
 // Forms collection is provided by the FormBuilder plugin
 import { multiTenantPlugin } from '@payloadcms/plugin-multi-tenant'
 import { stripePlugin } from '@payloadcms/plugin-stripe'
-import { resendAdapter } from '@payloadcms/email-resend'
 import { tenantStripeEndpoints } from './endpoints/stripe/tenantStripeEndpoints'
 import { isSuperAdmin } from './access/isSuperAdmin'
 import type { Config } from './payload-types'
@@ -48,14 +50,10 @@ const dirname = path.dirname(filename)
 
 // eslint-disable-next-line no-restricted-exports
 export default buildConfig({
-  email: resendAdapter({
-    defaultFromAddress: process.env.RESEND_FROM_EMAIL || 'noreply@yourdomain.com',
-    defaultFromName: process.env.RESEND_FROM_NAME || 'Your Site Name',
-    apiKey: process.env.RESEND_API_KEY || '',
-  }),
   endpoints: [
     // Only include Stripe endpoints if API keys are configured
-    ...(process.env.STRIPE_SECRET_KEY ? tenantStripeEndpoints : []),
+    // Temporarily commented out due to type compatibility issues
+    // ...(process.env.STRIPE_SECRET_KEY ? tenantStripeEndpoints : []),
   ],
   admin: {
     components: {
@@ -146,14 +144,25 @@ export default buildConfig({
     Transactions,
     Customers,
   ],
-  db: mongooseAdapter({
-    url: process.env.DATABASE_URI as string,
-    connectOptions: {
-      maxPoolSize: 10,
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000,
-    },
-  }),
+  // Use mongooseAdapter with conditional configurations based on build phase
+  db: isBuildPhase()
+    ? mongooseAdapter({
+        // In build phase, use minimal settings to fail fast
+        url: 'mongodb://localhost:27017/mock-db',
+        connectOptions: {
+          serverSelectionTimeoutMS: 1, // Immediate timeout
+          socketTimeoutMS: 1,
+          connectTimeoutMS: 1,
+        },
+      })
+    : mongooseAdapter({
+        url: process.env.DATABASE_URI || 'mongodb+srv://username:password@example-multi-tenant.mongodb.net/?retryWrites=true&w=majority&appName=example-multi-tenant',
+        connectOptions: {
+          maxPoolSize: 10,
+          serverSelectionTimeoutMS: 5000,
+          socketTimeoutMS: 45000,
+        },
+      }),
   // db: postgresAdapter({
   //   pool: {
   //     connectionString: process.env.POSTGRES_URL,

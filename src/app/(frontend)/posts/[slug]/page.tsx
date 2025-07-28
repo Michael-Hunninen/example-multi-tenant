@@ -4,7 +4,9 @@ import { RelatedPosts } from '@/blocks/RelatedPosts/Component'
 import { PayloadRedirects } from '@/components/PayloadRedirects'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
+import { notFound } from 'next/navigation'
 import { draftMode } from 'next/headers'
+import { withSafeStaticGeneration } from '../../../../utils/buildStaticGeneration'
 import React, { cache } from 'react'
 import RichText from '@/components/RichText'
 
@@ -16,7 +18,8 @@ import PageClient from './page.client'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { getTenantFromRequest } from '@/utilities/getTenantFromRequest'
 
-export async function generateStaticParams() {
+// Original function wrapped with safety utility to skip DB access during build
+const originalGenerateStaticParams = async () => {
   const payload = await getPayload({ config: configPromise })
   
   // Get current tenant ID for static generation
@@ -45,6 +48,9 @@ export async function generateStaticParams() {
 
   return params
 }
+
+// Export the safe version that won't try to connect during build
+export const generateStaticParams = withSafeStaticGeneration(originalGenerateStaticParams)
 
 type Args = {
   params: Promise<{

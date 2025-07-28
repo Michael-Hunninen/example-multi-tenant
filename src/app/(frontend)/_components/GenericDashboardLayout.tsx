@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/utilities/cn"
 import { AuthGuard, useAuth, AuthProvider } from '@/components/LMSAuth/AuthWrapper'
+import PWAMetadata from '@/components/PWAMetadata'
 
 interface GenericDashboardLayoutProps {
   children: React.ReactNode;
@@ -85,6 +86,11 @@ function GenericDashboardContent({ children }: GenericDashboardLayoutProps) {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <PWAMetadata 
+        tenantName="Learning Portal"
+        tenantDescription="Professional learning management system"
+        themeColor="#3b82f6"
+      />
       {/* Desktop Sidebar */}
       <div className={cn(
         "hidden md:flex flex-col bg-white border-r border-gray-200 fixed top-0 left-0 bottom-0 z-10 transition-all duration-300 ease-in-out shadow-sm",

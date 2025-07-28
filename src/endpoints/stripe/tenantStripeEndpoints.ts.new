@@ -1,0 +1,315 @@
+import { Payload } from 'payload'
+import type { PayloadRequest } from 'payload'
+import Stripe from 'stripe'
+import { initTenantStripe, getTenantStripeConfig } from '../../utilities/getTenantStripeConfig'
+
+// Updated to match PayloadHandler signature (req, res) - no next parameter
+type EndpointHandler = (req: PayloadRequest, res: any) => Promise<any>
+
+/**
+ * Create a tenant-aware Stripe payment intent endpoint
+ * Replaces the default /api/stripe/create-payment-intent endpoint from the plugin
+ */
+export const createTenantPaymentIntentEndpoint = {
+  path: '/stripe/create-tenant-payment-intent',
+  method: 'post',
+  handler: async (req: PayloadRequest, res: any) => {
+    const { payload } = req
+    
+    try {
+      // Get tenant-specific Stripe instance
+      const stripeInstance = await initTenantStripe(req, payload)
+      
+      if (!stripeInstance) {
+        return res.status(400).json({
+          message: 'Stripe is not configured for this tenant',
+        })
+      }
+
+      // Extract data from request body
+      const { amount, currency = 'usd', customerId, paymentMethodId, metadata = {} } = req.body as any
+
+      if (!amount) {
+        return res.status(400).json({
+          message: 'Missing required fields',
+        })
+      }
+
+      // Create payment intent with tenant's Stripe account
+      const paymentIntent = await stripeInstance.paymentIntents.create({
+        amount,
+        currency,
+        customer: customerId || undefined,
+        payment_method: paymentMethodId || undefined,
+        metadata,
+      })
+
+      return res.status(200).json(paymentIntent)
+    } catch (error) {
+      console.error('Error creating tenant payment intent:', error)
+      return res.status(500).json({
+        message: 'Error creating payment intent',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      })
+    }
+  }
+}
+
+/**
+ * Create a tenant-aware Stripe checkout session endpoint
+ */
+export const createTenantCheckoutSessionEndpoint = {
+  path: '/stripe/create-tenant-checkout-session',
+  method: 'post',
+  handler: async (req: PayloadRequest, res: any) => {
+    const { payload } = req
+    
+    try {
+      // Get tenant-specific Stripe instance
+      const stripeInstance = await initTenantStripe(req, payload)
+      
+      if (!stripeInstance) {
+        return res.status(400).json({
+          message: 'Stripe is not configured for this tenant',
+        })
+      }
+
+      // Extract data from request body
+      const { 
+        priceId, 
+        mode = 'payment',
+        successUrl,
+        cancelUrl,
+        customerId,
+        metadata = {}
+      } = req.body as any
+
+      if (!priceId || !successUrl || !cancelUrl) {
+        return res.status(400).json({
+          message: 'Missing required fields',
+        })
+      }
+
+      // Create checkout session with tenant's Stripe account
+      const session = await stripeInstance.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price: priceId,
+            quantity: 1,
+          },
+        ],
+        mode: mode as Stripe.Checkout.SessionCreateParams.Mode,
+        success_url: successUrl,
+        cancel_url: cancelUrl,
+        customer: customerId || undefined,
+        metadata,
+      })
+
+      return res.status(200).json({ sessionId: session.id })
+    } catch (error) {
+      console.error('Error creating tenant checkout session:', error)
+      return res.status(500).json({
+        message: 'Error creating checkout session',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      })
+    }
+  }
+}
+
+/**
+ * Endpoint to get publishable key for current tenant
+ */
+export const getTenantPublishableKeyEndpoint = {
+  path: '/stripe/tenant-publishable-key',
+  method: 'get',
+  handler: async (req: PayloadRequest, res: any) => {
+    const { payload } = req
+    
+    try {
+      // Get tenant-specific Stripe config
+      const config = await getTenantStripeConfig(req, payload)
+      
+      if (!config.publishableKey || !config.enabled) {
+        return res.status(400).json({
+          message: 'Stripe is not configured for this tenant',
+        })
+      }
+
+      return res.status(200).json({ publishableKey: config.publishableKey })
+    } catch (error) {
+      console.error('Error getting tenant publishable key:', error)
+      return res.status(500).json({
+        message: 'Error getting publishable key',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      })
+    }
+  }
+}
+
+/**
+ * Create a tenant-aware Stripe webhook handler endpoint
+ * This will process webhooks using the tenant's webhook secret
+ */
+export const tenantWebhookEndpoint = {
+  path: '/stripe/tenant-webhooks',
+  method: 'post',
+  handler: async (req: PayloadRequest, res: any) => {
+    const { payload } = req
+    
+    try {
+      // Get raw body from request
+      const rawBody = req.body
+      if (!rawBody) {
+        return res.status(400).json({ message: 'Missing request body' })
+      }
+
+      // Get signature from headers
+      // Handle both types of headers objects safely
+      let signature: string | undefined | null;
+      
+      if (typeof req.headers.get === 'function') {
+        // Web standard Headers object
+        signature = req.headers.get('stripe-signature');
+      } else {
+        // Node.js/Express headers object
+        const nodeHeaders = req.headers as unknown as {
+          'stripe-signature'?: string | string[];
+        };
+        
+        const rawSignature = nodeHeaders['stripe-signature'];
+        signature = Array.isArray(rawSignature) ? rawSignature[0] : rawSignature;
+      }
+      if (!signature) {
+        return res.status(400).json({ message: 'Missing Stripe signature' })
+      }
+
+      // Get tenant-specific Stripe config
+      const config = await getTenantStripeConfig(req, payload)
+      
+      if (!config.webhookSecret || !config.secretKey || !config.enabled) {
+        return res.status(400).json({
+          message: 'Stripe webhook is not configured for this tenant',
+        })
+      }
+
+      const stripeInstance = new Stripe(config.secretKey as string, {
+        apiVersion: '2022-08-01',
+      })
+
+      // Verify webhook signature
+      let event: Stripe.Event
+      try {
+        event = stripeInstance.webhooks.constructEvent(
+          Buffer.from(JSON.stringify(rawBody)),
+          signature as string,
+          config.webhookSecret as string
+        )
+      } catch (err) {
+        return res.status(400).json({
+          message: 'Invalid webhook signature',
+          error: err instanceof Error ? err.message : 'Unknown error',
+        })
+      }
+
+      // Process the webhook event based on type
+      // Helper function to get fallback user ID
+      const getFallbackUserId = async (): Promise<string> => {
+        const admins = await payload.find({
+          collection: 'users',
+          where: {
+            roles: {
+              contains: 'super-admin'
+            }
+          },
+          limit: 1
+        });
+        
+        if (admins.docs.length === 0) {
+          throw new Error('No admin user found for fallback reference');
+        }
+        
+        return admins.docs[0].id;
+      };
+      
+      // Helper function to get fallback product ID
+      const getFallbackProductId = async () => {
+        const products = await payload.find({
+          collection: 'products',
+          limit: 1
+        });
+        
+        return products.docs.length > 0 ? products.docs[0].id : undefined;
+      };
+      
+      switch (event.type) {
+        case 'payment_intent.succeeded':
+          // Handle successful payment
+          const paymentIntent = event.data.object as Stripe.PaymentIntent
+          // Record transaction in database
+          const userIdForPayment = await getFallbackUserId();
+          
+          await payload.create({
+            collection: 'transactions',
+            data: {
+              stripePaymentIntentId: paymentIntent.id,
+              amount: paymentIntent.amount,
+              status: 'succeeded',
+              stripeCustomerId: paymentIntent.customer?.toString() || null,
+              metadata: paymentIntent.metadata,
+              currency: 'usd',
+              type: 'payment',
+              user: userIdForPayment // Required field
+            },
+          })
+          break
+
+        case 'customer.subscription.created':
+        case 'customer.subscription.updated':
+        case 'customer.subscription.deleted':
+          // Handle subscription events
+          const subscription = event.data.object as Stripe.Subscription
+          // Update subscription in database
+          const productId = await getFallbackProductId();
+          const userId = await getFallbackUserId();
+          
+          if (!productId || !userId) {
+            console.error('Cannot create subscription: missing required product or user reference');
+            return res.status(500).json({ error: 'Missing required references' });
+          }
+          
+          await payload.create({
+            collection: 'subscriptions',
+            data: {
+              stripeSubscriptionId: subscription.id,
+              status: subscription.status,
+              stripeCustomerId: subscription.customer?.toString() || null,
+              currentPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString(),
+              metadata: subscription.metadata,
+              user: userId, // Required field
+              product: productId // Required field
+            },
+          })
+          break
+
+        // Add more event handlers as needed
+      }
+
+      return res.status(200).json({ received: true })
+    } catch (error) {
+      console.error('Error processing tenant webhook:', error)
+      return res.status(500).json({
+        message: 'Error processing webhook',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      })
+    }
+  }
+}
+
+// Export all tenant-aware Stripe endpoints
+export const tenantStripeEndpoints = [
+  createTenantPaymentIntentEndpoint,
+  createTenantCheckoutSessionEndpoint,
+  getTenantPublishableKeyEndpoint,
+  tenantWebhookEndpoint,
+]

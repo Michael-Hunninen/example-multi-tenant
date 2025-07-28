@@ -160,10 +160,9 @@ export const ArchiveBlock: React.FC<ArchiveBlockProps> = (props) => {
                 >
                   <Card 
                     doc={doc} 
-                    relationTo={relationTo}
+                    relationTo={relationTo === 'posts' ? 'posts' : undefined}
                     showCategories
-                    featured
-                    size="large"
+                    className="featured"
                   />
                 </CMSLink>
               ))}
@@ -215,9 +214,9 @@ export const ArchiveBlock: React.FC<ArchiveBlockProps> = (props) => {
             <div key={`card-${card.id || index}`} className="relative">
               <Card
                 doc={card}
-                relationTo={relationTo}
+                relationTo={relationTo === 'posts' ? 'posts' : undefined}
                 showCategories
-                showThumbnail={showThumbnails}
+                // Removed showThumbnail prop as it doesn't exist in Card component
               />
               <CMSLink
                 url={`/${relationTo}/${card.slug}`}

@@ -109,10 +109,7 @@ export const metadata: Metadata = {
 export default function LMSHomePage() {
   return (
     <div className="min-h-screen bg-black">
-      <LMSNavigation 
-        isAuthenticated={false}
-        currentPath="/"
-      />
+      <LMSNavigation />
       <main>
         <RenderBlocks blocks={mockPageData.layout} />
       </main>

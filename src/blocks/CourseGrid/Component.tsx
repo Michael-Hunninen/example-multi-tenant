@@ -106,7 +106,7 @@ export const CourseGridBlockComponent: React.FC<Props> = ({
           
           {course.tags && course.tags.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-4">
-              {course.tags.slice(0, 3).map((tagItem, tagIndex) => (
+              {course.tags.slice(0, 3).map((tagItem: { tag: string }, tagIndex: number) => (
                 <span
                   key={tagIndex}
                   className="px-2 py-1 bg-gray-700 text-gray-300 rounded text-xs"
@@ -227,7 +227,7 @@ export const CourseGridBlockComponent: React.FC<Props> = ({
                       
                       <Button
                         asChild={!course.requiresAuth || isAuthenticated}
-                        disabled={course.requiresAuth && !isAuthenticated}
+                        disabled={Boolean(course.requiresAuth) && !isAuthenticated}
                         className="bg-teal hover:bg-teal/90 text-black"
                       >
                         {!course.requiresAuth || isAuthenticated ? (

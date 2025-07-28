@@ -8,6 +8,7 @@ import { getPayload } from 'payload'
 import React from 'react'
 import PageClient from './page.client'
 import { notFound } from 'next/navigation'
+import { withSafeStaticGeneration } from '../../../../../utils/buildStaticGeneration'
 
 export const revalidate = 600
 
@@ -69,7 +70,8 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
   }
 }
 
-export async function generateStaticParams() {
+// Original function wrapped with safety utility to skip DB access during build
+const originalGenerateStaticParams = async () => {
   const payload = await getPayload({ config: configPromise })
   const { totalDocs } = await payload.count({
     collection: 'posts',
@@ -86,3 +88,6 @@ export async function generateStaticParams() {
 
   return pages
 }
+
+// Export the safe version that won't try to connect during build
+export const generateStaticParams = withSafeStaticGeneration(originalGenerateStaticParams)
