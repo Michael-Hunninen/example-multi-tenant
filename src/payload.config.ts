@@ -40,7 +40,6 @@ import { Customers } from './collections/Customers'
 // Forms collection is provided by the FormBuilder plugin
 import { multiTenantPlugin } from '@payloadcms/plugin-multi-tenant'
 import { stripePlugin } from '@payloadcms/plugin-stripe'
-import { resendAdapter } from '@payloadcms/email-resend'
 import { tenantStripeEndpoints } from './endpoints/stripe/tenantStripeEndpoints'
 import { isSuperAdmin } from './access/isSuperAdmin'
 import type { Config } from './payload-types'
@@ -51,11 +50,6 @@ const dirname = path.dirname(filename)
 
 // eslint-disable-next-line no-restricted-exports
 export default buildConfig({
-  email: resendAdapter({
-    defaultFromAddress: process.env.RESEND_FROM_EMAIL || 'noreply@yourdomain.com',
-    defaultFromName: process.env.RESEND_FROM_NAME || 'Your Site Name',
-    apiKey: process.env.RESEND_API_KEY || '',
-  }),
   endpoints: [
     // Only include Stripe endpoints if API keys are configured
     // Temporarily commented out due to type compatibility issues
